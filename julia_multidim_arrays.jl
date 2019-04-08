@@ -107,9 +107,15 @@ hcat([1 2], [3 4]) # row vector
 [1;2;3] #vcat
 [1 2 3] # hcat
 [1 2; 3 4] # hvcat
+# The concatenation functions are used so often that they have special syntax
+[[1;2];[3, 4]] # col vectorize then concatenation = col vector
+[[1 2] [2 4]] # row vecttorize then concatenation without ';' = row vector
+[[1 2]; [3 4]] # row vecttorize then concatenation with ';' = 2-dims array
+[[1, 2]; [3, 4]] # col vector
 # typed array
 Float64[1,2,3,4]
-# comprehensions
+Int128[3,4,5,6]
+# comprehensions: a general and powerful way to construct arrays
 # A = [ F(x,y,...) for x=rx, y=ry, ... ]
 x = rand(8)
 [0.25*x[i-1] + 0.5*x[i] + 0.25*x[i+1] for i=2:length(x)-1]
