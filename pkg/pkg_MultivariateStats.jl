@@ -9,7 +9,7 @@ data = readcsv(
 )
 
 head(data)
-data2 = reinterpret(Float64, Matrix(data))
+data2 = convert(Array{Float64,2}, data)
 import MultivariateStats
-res = fit(FactorAnalysis, data2; maxoutdim = 2)
+res = MultivariateStats.fit(FactorAnalysis, data2; maxoutdim = 4, mean = 0)
 res = fit(PPCA, data2; maxoutdim = 2)
