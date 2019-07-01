@@ -4,7 +4,7 @@ Char(111) # unicode point character
 Char(0110)
 Char(0111)
 # その逆
-Int('n')
+Int('n') # シングルクオートは文字リテラルを表現する。
 
 println("test\ntest")
 
