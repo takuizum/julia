@@ -9,7 +9,7 @@ Plots.plot(theta, icc)
 PyPlot.plot(theta, icc)
 
 
-using Distributions, Random, StatsFuns, DataFrames #$ Distributions は初回に限りPkg.addが必要。
+using Distributions, Random, StatsFuns, Plots #$ Distributions は初回に限りPkg.addが必要。
 θ = rand(Normal(), 5000)
 α = rand(LogNormal(), 30)
 β = rand(Normal(-1, 1), 30)
@@ -22,6 +22,14 @@ function icc2pl(θ::Float64, α::Float64, β::Float64)::Float64
 end
 icc2pl(1.0, 1.0, 2.0)
 icc2pl([1.0, 2.0, 3.0], 1.0, 0.0)
+
+theta = collect(-4:0.1:4)
+icc = zeros(length(theta))
+for i in 1:length(theta)
+    icc[i] = icc2pl(theta[i], 1.0, 0.0)
+end
+plot(theta, icc)
+
 struct simgenClass2
     resp::Array{Int64,2}
     θ::Array{Float64,1}
