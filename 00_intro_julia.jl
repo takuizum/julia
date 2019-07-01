@@ -81,3 +81,48 @@ reshape(1:6, 1, :)
 reshape([1 2 ; 3 4], 1, :) # 次元のうちひとつは`:`で省略可能
 
 # broadcasting
+[1, 2]
+[1, 2] .* [1, 10] == [1, 20] # 要素ごとの積
+
+# fused expression
+# 計算結果を既に作ってある配列に代入する場合 `.`が便利。一次配列を作成しないので，速くて省メモリ。
+100_00 == 10000
+X = randn(100_000)
+Y = zeros(length(X))
+Y += X; Y .+= X # JITコンパイルしておくことで，正確な計算時間を測定可能にする
+@time Y += X
+@time Y .+= X # 計算速度もメモリ使用もやく1／3くらいになっている。
+
+@time @. Y += X
+
+# associative array 連想配列
+["apple", "banana"] # strign array
+
+dict = Dict("apple" => "red", "banana" => "yellow")
+dict["apple"]
+dict["lemon"] # error
+haskey(dict, "peach") # false
+get(dict, "peach", "pink") # error
+haskey(dict, "peach") #
+dict["peach"]
+
+#  Science Calculation
+using Random
+randexp(100)
+
+using Statistics
+xs = collect(1:10)
+mean(xs)
+var(xs) # unbias
+var(xs, corrected = false)
+
+xs2 = [xs xs]
+mean(xs2) # 全要素の平均
+mean(xs2, dims = 1) # 列単位で平均
+mean(xs2, dims = 2) # 行単位で平均
+
+using LinearAlgebra
+A = [-1.0 2.0; 2.0 -1.0]
+F = eigen(A)
+F.values
+F.vectors
