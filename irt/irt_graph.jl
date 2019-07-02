@@ -9,7 +9,7 @@ Plots.plot(theta, icc)
 PyPlot.plot(theta, icc)
 
 
-using Distributions, Random, StatsFuns, Plots #$ Distributions は初回に限りPkg.addが必要。
+using Distributions, Random, StatsFuns, Plots
 θ = rand(Normal(), 5000)
 α = rand(LogNormal(), 30)
 β = rand(Normal(-1, 1), 30)
