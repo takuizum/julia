@@ -88,3 +88,14 @@ res = vb(X, 2, 100)
 # どうやら4回の周期でおなじイテレーションを繰り返しているようで，全然収束していない。
 
 [res.η X Sn]
+
+# 分類結果の確認
+
+which_max = zeros(N)
+for i in 1:N
+    which_max[i] = findall(x->x==maximum(df_tmp[1,:]),  df_tmp[1,:])
+end
+
+iszero(which_max .- Sn)
+
+@which count(iszero, which_max .- Sn)
