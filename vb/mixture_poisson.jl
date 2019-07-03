@@ -3,56 +3,88 @@
 using Distributions, StatsBase, StatsFuns, Plots, Random, SpecialFunctions
 
 # Poisson's hyper parameter is λ
-plot(fit(Histogram, rand(Poisson(), 10000), nbins = 20))
+N = 10000
+nK = 4
 
-Sn = sample(Random.GLOBAL_RNG, [1:1:4;], 10000) # cluster
+Sn =  rand(Categorical([0.5, 0.5]), N)# latent cluster
+
 Khyper = [2 3; 1 10; 5 10; 20 1]
-
 plot([0:0.01:20;], pdf.(Gamma(Khyper[1,1], Khyper[1,2]), [0:0.01:20;]))
 plot!([0:0.01:20;], pdf.(Gamma(Khyper[2,1], Khyper[2,2]), [0:0.01:20;]))
 plot!([0:0.01:20;], pdf.(Gamma(Khyper[3,1], Khyper[3,2]), [0:0.01:20;]))
 plot!([0:0.01:20;], pdf.(Gamma(Khyper[4,1], Khyper[4,2]), [0:0.01:20;]))
 
-λ = [rand(Gamma(Khyper[i,1], Khyper[i,2])) for i in 1:4 ]
+λ = [rand(Gamma(Khyper[i,1], Khyper[i,2])) for i in [1 4] ]
 X = [ rand(Poisson(λ[Sn[i]]), 1)[1] for i in 1:length(Sn)]
 plot(fit(Histogram, X))
 
 nK = 4
-function vb(X, nK, a, b)
+
+struct MixturePoissonVB
+    η
+    λ
+    shape
+    scale
+    α
+end
+function vb(X, nK, MAXITER = 10,
+            a = sample([1:1:40;], nK), # Gamma hyper param(shape)
+            b = sample([1:1:40;], nK), # Gamma hyper param(scale)
+            α = sample([1:1:40;], nK)  # Dirichrret hyper param
+            )
     N = length(X)
-    # hyper parameters
-    a = sample([1:1:40;], nK); b = sample([1:1:40;], nK); α = sample([1:1:40;], nK)
     # initialize distribution (Expectation)
-    λ0 = a ./ b
-    lnλ0 = zeros(nK)
-    lnπ0 = zeros(nK)
+    Sn =  rand(Categorical(ones(nK)/nK), N)# cluster
+    S = zeros(Int64, N, nK)
+    println("Initialize latent matrix")
     for k in 1:nK
-        lnλ0[k] = digamma(a[k]) - log(b[k])
-        lnπ0[k] = digamma(α[k]) - digamma(sum(α))
+        S[findall(x->x==k, Sn), k] .= 1
     end
-    η1 = [exp(X[n]*lnλ0[k] - λ0[k] + lnπ0[k]) for n in 1:N, k in 1:nK]
-    for i in 1:N
-        η1[i,:] .= η1[i,:] / sum(η1[i,:])
-    end
-    # Expectation of λ and π
-
-    # a1 = zeros(nK) # hyper α
-    # sn1 = mean(η1, dims = 2)
-
-    a1 = sum(η1 .* X, dims = 1) + a'
-    b1 = sum(η1, dims = 1) + b'
-    α1 = sum(η1, dims = 1) + α'
-    λ1 = a1 ./ b1
-    lnλ1 = zeros(nK)
-    lnπ1 = zeros(nK)
+    SnX =  S' * X
+    sumS = sum(S', dims = 2)
+    println("Initialize parameter vectors")
+    # empty vectors
+    a1 = zeros(nK);b1 = zeros(nK);α1 = zeros(nK)
+    lnλ1 = zeros(nK);lnπ1 = zeros(nK);λ1 = zeros(nK)
+    η1 = zeros(N, nK)
     for k in 1:nK
-        lnλ1[k] = digamma(α1[k]) - log(b1[k])
+        a1[k] = SnX[k] + a[k]
+        b1[k] = sumS[k] + b[k]
+        α1[k] = sumS[k] + α[k]
+        λ1[k] = a1[k] / b1[k]
+        lnλ1[k] = digamma(a1[k]) - log(b1[k])
         lnπ1[k] = digamma(α1[k]) - digamma(sum(α1))
     end
-    # Expectation of Sn
-    η1 = [exp(X[n]*lnλ1[k] - λ1[k] + lnπ1[k]) for n in 1:N, k in 1:nK]
-    # Expectation of λ and π
-    for i in 1:N
-        η1[i,:] .= η1[i,:] / sum(η1[i,:])
-    end
-    # ELBO
+    # VB ITERATION
+    ITER = 0
+    while ITER < (MAXITER + 1)
+        print("Itaration", ITER, "... λ is ")
+        println(λ1)
+        ITER += 1
+        # Expectation of Sn
+        for i in 1:N
+            η1[i,:] = exp.(X[i] * lnλ1 - λ1 + lnπ1)
+            η1[i,:] .= η1[i,:] / sum(η1[i,:]) # shoud use logsumexp ?
+        end
+        # Expectation of λ and π
+        ηX =  η1' * X
+        sumη = sum(η1', dims = 2) # total probability of each cluster
+        for k in 1:nK
+            a1[k] = ηX[k] + a[k]
+            b1[k] = sumη[k] + b[k]
+            α1[k] = sumη[k] + α[k]
+            λ1[k] = a1[k] / b1[k]
+            lnλ1[k] = digamma(a1[k]) - log(b1[k])
+            lnπ1[k] = digamma(α1[k]) - digamma(sum(α1))
+        end
+    end # of while
+    MixturePoissonVB(η1, λ1, a1, b1, α1)
+end # of function
+
+res = vb(X, 4, 100, Khyper[:,1], Khyper[:,2], [1.0,1.0,1.0,1.0])
+res = vb(X, 3, 10, [2,7,10], [2,2,2], [1.0,1.0,1.0])
+res = vb(X, 2, 100)
+
+# どうやら4回の周期でおなじイテレーションを繰り返しているようで，全然収束していない。
+
+[res.η X Sn]
