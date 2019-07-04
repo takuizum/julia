@@ -1,6 +1,6 @@
 # mixture poisson
 
-using Distributions, StatsBase, StatsFuns, Plots, Random, SpecialFunctions
+using Distributions, StatsBase, StatsFuns, Plots, Random, SpecialFunctions, Distances
 
 # Poisson's hyper parameter is λ
 N = 10000
@@ -27,6 +27,16 @@ struct MixturePoissonVB
     scale
     α
 end
+
+# KL divergence
+# kl_divergence()
+#function ELBO_PMM(X, η, nK, pri_a, pri_b, pos_a, pos_b)
+#    ln_pxsλ = zeros(1)
+#    for k in 1:nK
+#        ln_pxsλ +=
+#    end # of N
+#end
+
 function vb(X, nK, MAXITER = 10,
             a = sample([1:1:40;], nK), # Gamma hyper param(shape)
             b = sample([1:1:40;], nK), # Gamma hyper param(scale)
@@ -55,16 +65,15 @@ function vb(X, nK, MAXITER = 10,
         lnλ1[k] = digamma(a1[k]) - log(b1[k])
         lnπ1[k] = digamma(α1[k]) - digamma(sum(α1))
     end
-    # VB ITERATION
+    # START VB ITERATION
     ITER = 0
     while ITER < (MAXITER + 1)
-        print("Itaration", ITER, "... λ is ")
-        println(λ1)
+        print("Itaration", ITER, "... λ is ", λ1 ,"\r")
         ITER += 1
         # Expectation of Sn
         for i in 1:N
-            η1[i,:] = exp.(X[i] * lnλ1 - λ1 + lnπ1)
-            η1[i,:] .= η1[i,:] / sum(η1[i,:]) # shoud use logsumexp ?
+            η1[i,1:nK] = exp.(X[i] * lnλ1 - λ1 + lnπ1)
+            η1[i,:] = η1[i,:] / sum(η1[i,:]) # shoud use logsumexp ?
         end
         # Expectation of λ and π
         ηX =  η1' * X
@@ -78,12 +87,13 @@ function vb(X, nK, MAXITER = 10,
             lnπ1[k] = digamma(α1[k]) - digamma(sum(α1))
         end
     end # of while
+    println("ITERATIONS REACHED MAXITER")
     MixturePoissonVB(η1, λ1, a1, b1, α1)
 end # of function
 
 res = vb(X, 4, 100, Khyper[:,1], Khyper[:,2], [1.0,1.0,1.0,1.0])
 res = vb(X, 3, 10, [2,7,10], [2,2,2], [1.0,1.0,1.0])
-res = vb(X, 2, 100)
+@time res = vb(X, 2, 1000)
 
 # どうやら4回の周期でおなじイテレーションを繰り返しているようで，全然収束していない。
 
