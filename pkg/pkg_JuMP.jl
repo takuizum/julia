@@ -56,3 +56,5 @@ is_fixed(x_fixed) # fixed valuesを確認する。
 fix_value(x_fixed) #
 unfix(x_fixed) # 消す。
 fix(x_lower, 2; force = true) # こうすることで強制的にbounds条件からfixed条件に変更できる。
+
+## Variables containers
