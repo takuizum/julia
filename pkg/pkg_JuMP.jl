@@ -58,3 +58,5 @@ unfix(x_fixed) # 消す。
 fix(x_lower, 2; force = true) # こうすることで強制的にbounds条件からfixed条件に変更できる。
 
 ## Variables containers
+# より複雑なデータ構造に対応した制約を課すために，containersを使う。
+Array{Int64, 2}(undef, 3, 3)
