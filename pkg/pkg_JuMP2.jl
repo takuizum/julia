@@ -129,8 +129,10 @@ mod3 = Model(with_optimizer(GLPK.Optimizer))
 @constraint(mod3, target_TIF3[3]+.1 >= [fill(0,300);IIF3[3,:]]'F3 >= target_TIF3[3]-.1)
 @constraint(mod3, target_TIF3[5]+.1 >= [fill(0,300);IIF3[5,:]]'F3 >= target_TIF3[5]-.1)
 
-@constraint(mod3, 1 >= [F1 F2 F3] * [1 1 1]' >= 0)
-
+# between test forms
+for j in 1:150
+    @constraint(mod3, 1 >= [F1[j] + F2[j+150] + F3[j+300]][1] >= 0)
+end
 
 mod3
 # JuMP.backend(mod3) # 偉いことになるので実行NG
