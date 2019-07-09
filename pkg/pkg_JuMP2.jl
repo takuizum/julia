@@ -16,7 +16,7 @@ function tif(θ, α, β)
             I[m] += α[j]^2 * p * (1-p)
         end
     end
-    return I[:]
+    return I
 end
 
 tif([-4, 0, 4], α, β) # optimize base points
