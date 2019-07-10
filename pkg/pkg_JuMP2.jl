@@ -140,8 +140,8 @@ mod3
 @time optimize!(mod3)
 termination_status(mod3) # OPTIMAL::TerminationStatusCode = 1 ならいちおうOK
 get_F1 = value.(F1)
-get_F2 = value.(F1)
-get_F3 = value.(F1)
+get_F2 = value.(F2)
+get_F3 = value.(F3)
 
 plot(tif([-4:0.1:4;], α3[isone.(get_F1)], β3[isone.(get_F1)]), label = "optimized test F1")
 plot(tif([-4:0.1:4;], α3[isone.(get_F2)], β3[isone.(get_F2)]), label = "optimized test F2")
