@@ -65,6 +65,8 @@ rcall(:sum, [1:10;])
 # @rlibrary macroは非効率なので非推奨？
 R"""
 library(tidyverse)
+"""
+R"""
 ggplot(tibble(x = seq(-4, 4, len = 101), y = dnorm(seq(-4, 4, len = 101))), aes(x = x, y = y)) +
 geom_line()
 """
