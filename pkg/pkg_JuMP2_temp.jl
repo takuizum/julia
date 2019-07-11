@@ -4,6 +4,7 @@ using JuMP, GLPK, Random, Distributions, StatsFuns
 
 α3 = rand(LogNormal(-0.5, 0.6), 60)
 β3 = rand(Normal(0, 1.5), 60)
+target_θ = [-2:1:2;]
 # 制約のためのIIF, TIFの計算
 IIF3 = [tif(target_θ[i], α3[j], β3[j])[1] for i in 1:5, j in 1:60]
 target_TIF3 = tif(target_θ, α3, β3) * 10/60
