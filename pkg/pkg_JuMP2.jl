@@ -147,3 +147,61 @@ plot(tif([-4:0.1:4;], α3[isone.(get_F1)], β3[isone.(get_F1)]), label = "optimi
 plot(tif([-4:0.1:4;], α3[isone.(get_F2)], β3[isone.(get_F2)]), label = "optimized test F2")
 plot(tif([-4:0.1:4;], α3[isone.(get_F3)], β3[isone.(get_F3)]), label = "optimized test F3")
 plot!(tif([-4:0.1:4;], α3, β3) * 30/90, label = "target TIF") # SUCCESS
+
+
+# JuMP_temp.jlの結果を反映させて，再度項目数を増やしてみて実行
+Random.seed!(1234)
+α4 = rand(LogNormal(-0.5, 0.6), 150)
+β4 = rand(Normal(0, 1.5), 150)
+target_θ4 = [-2:1:2;]
+target_TIF4 = tif(target_θ4, α4, β4) * 30/150
+IIF4 = [tif(target_θ4[i], α4[j], β4[j])[1] for i in 1:length(target_θ4), j in 1:150]
+# create model
+mod4 = Model(with_optimizer(GLPK.Optimizer))
+# declare variables
+@variable(mod4, 0 <= F1[1:150] <= 1, Int) # Test From 1 to 3
+@variable(mod4, 0 <= F2[1:150] <= 1, Int)
+@variable(mod4, 0 <= F3[1:150] <= 1, Int)
+# objective functions
+@objective(mod4, Min, α4' * F1)
+@objective(mod4, Min, α4' * F2)
+@objective(mod4, Min, α4' * F3)
+# impose constraints
+# item size in each test forms
+@constraint(mod4, fill(1,150)'F1 == 30) # item size
+@constraint(mod4, fill(1,150)'F2 == 30)
+@constraint(mod4, fill(1,150)'F3 == 30)
+# item domain
+@constraint(mod4, [fill(1,100);fill(0,50)]'F1 == 20) # 前半から18項目
+@constraint(mod4, [fill(0,100);fill(1,50)]'F1 == 10) # 後半から12項目
+@constraint(mod4, [fill(1,100);fill(0,50)]'F2 == 20)
+@constraint(mod4, [fill(0,100);fill(1,50)]'F2 == 10)
+@constraint(mod4, [fill(1,100);fill(0,50)]'F3 == 20)
+@constraint(mod4, [fill(0,100);fill(1,50)]'F3 == 10)
+# TIF constraints
+for i in 1:5 # the number of evaluated points
+    @constraint(mod4, target_TIF4[i]+.1 >= IIF4[i,:]'F1 >= target_TIF4[i]-.1)
+    @constraint(mod4, target_TIF4[i]+.1 >= IIF4[i,:]'F2 >= target_TIF4[i]-.1)
+    @constraint(mod4, target_TIF4[i]+.1 >= IIF4[i,:]'F3 >= target_TIF4[i]-.1)
+end
+# between test forms
+for j in 1:150 # the number of items in the item pool
+    @constraint(mod4, 1 >= [F1[j] + F2[j] + F3[j]][1] >= 0)
+end
+mod4
+# JuMP.backend(mod4) # 偉いことになるので実行NG
+
+@time optimize!(mod4)
+termination_status(mod4) # OPTIMAL::TerminationStatusCode = 1 ならいちおうOK
+get_F1 = value.(F1)
+get_F2 = value.(F2)
+get_F3 = value.(F3)
+
+([1:60;][isone.(get_F1)])'
+([1:60;][isone.(get_F2)])'
+([1:60;][isone.(get_F3)])'
+
+plot([-4:0.1:4;], tif([-4:0.1:4;], α3[isone.(get_F1)], β3[isone.(get_F1)]), label = "optimized test F1")
+plot!([-4:0.1:4;], tif([-4:0.1:4;], α3[isone.(get_F2)], β3[isone.(get_F2)]), label = "optimized test F2")
+plot!([-4:0.1:4;], tif([-4:0.1:4;], α3[isone.(get_F3)], β3[isone.(get_F3)]), label = "optimized test F3")
+plot!([-4:0.1:4;], tif([-4:0.1:4;], α3, β3) * 10/60, label = "target TIF") # SUCCESS

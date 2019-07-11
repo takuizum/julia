@@ -72,6 +72,12 @@ plot!(tif([-4:0.1:4;], α3, β3) * 10/60, label = "target TIF") # SUCCESS
 
 
 # モデル構築の際の冗長性を省いた形式
+Random.seed!(1234)
+α3 = rand(LogNormal(-0.5, 0.6), 60)
+β3 = rand(Normal(0, 1.5), 60)
+target_θ3 = [-2:0.5:2;]
+target_TIF3 = tif(target_θ3, α3, β3) * 10/60
+IIF3 = [tif(target_θ3[i], α3[j], β3[j])[1] for i in 1:length(target_θ3), j in 1:60]
 # create model
 mod3 = Model(with_optimizer(GLPK.Optimizer))
 # declare variables
@@ -113,11 +119,11 @@ get_F1 = value.(F1)
 get_F2 = value.(F2)
 get_F3 = value.(F3)
 
-([1:60][isone.(get_F1)])'
-([1:60][isone.(get_F2)])'
-([1:60][isone.(get_F3)])'
+([1:60;][isone.(get_F1)])'
+([1:60;][isone.(get_F2)])'
+([1:60;][isone.(get_F3)])'
 
-plot(tif([-4:0.1:4;], α3[isone.(get_F1)], β3[isone.(get_F1)]), label = "optimized test F1")
-plot!(tif([-4:0.1:4;], α3[isone.(get_F2)], β3[isone.(get_F2)]), label = "optimized test F2")
-plot!(tif([-4:0.1:4;], α3[isone.(get_F3)], β3[isone.(get_F3)]), label = "optimized test F3")
-plot!(tif([-4:0.1:4;], α3, β3) * 10/60, label = "target TIF") # SUCCESS
+plot([-4:0.1:4;], tif([-4:0.1:4;], α3[isone.(get_F1)], β3[isone.(get_F1)]), label = "optimized test F1")
+plot!([-4:0.1:4;], tif([-4:0.1:4;], α3[isone.(get_F2)], β3[isone.(get_F2)]), label = "optimized test F2")
+plot!([-4:0.1:4;], tif([-4:0.1:4;], α3[isone.(get_F3)], β3[isone.(get_F3)]), label = "optimized test F3")
+plot!([-4:0.1:4;], tif([-4:0.1:4;], α3, β3) * 10/60, label = "target TIF") # SUCCESS
