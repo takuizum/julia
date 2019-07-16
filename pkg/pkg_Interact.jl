@@ -12,9 +12,9 @@ end
 
 #%%
 plotlyjs()
-@manipulate for α in 0.0001:0.1:3, β in -4:0.1:4
+gr() # こっちだとヌルヌル動くようになる。
+@manipulate for α = 0.0001:0.1:3, β = -4:0.1:4
         θ = [-4:0.001:4;]
-        prob = logistic.((θ.-β)*α)
         prob = logistic.((θ.-β)*α)
         plot(θ, prob)
     end
