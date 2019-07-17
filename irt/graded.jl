@@ -49,7 +49,7 @@ function resgen_graded(N, K)
     simgenClassGraded(resp, θ, α, β)
 end # of function
 
-x = resgen_graded(50000, [3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4])
+x = resgen_graded(5000, [3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4])
 
 # using StatsBase, Plots
 # plot(fit(Histogram, wsample([1,2,3], [0.1, 0.1, 0.7], 10000)))
