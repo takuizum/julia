@@ -6,7 +6,7 @@ function pgrm(θ, α, b0::Union{Float64, Missing}, b1::Union{Float64, Missing})
         logistic(α*(θ-b0)) - logistic(α*(θ-b1))
     elseif typeof(b0) == Missing
         1 - logistic(α*(θ-b1))
-    else typeof(b1) == Missing
+    else#  typeof(b1) == Missing
         logistic(α*(θ-b0)) - 0
     end
 end
@@ -21,9 +21,9 @@ B[1,1] = 1
 B[2,:]
 [1, 2, 3]'
 A = [[1, 2, 3], [4, 5], [7, 8, 9]] # Array in Array が良さそう。
-A[1] # 1 dim array
+A[2] # 1 dim array
 
-N = 5000,; J = 30; M = 31
+N = 5000; J = 30; M = 31
 struct simgenClassGraded
     resp::Array{Int64,2}
     θ::Array{Float64,1}
@@ -49,28 +49,56 @@ function resgen_graded(N, K)
     simgenClassGraded(resp, θ, α, β)
 end # of function
 
-x = resgen_graded(5000, [3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4])
-
+x = resgen_graded(5000, sample(3:5, 30))
+x.β
 # using StatsBase, Plots
 # plot(fit(Histogram, wsample([1,2,3], [0.1, 0.1, 0.7], 10000)))
+
+# intial value
+α0 = repeat([1], J)
+β0 = x.β
+resp = x.resp
+
+# categories number in each items
+K = Array{Array{Int64, 1},1}(undef, J)
+for j in 1:J
+    K[j] = unique(resp[:,j])
+end
 
 by = (4-(-4))/(M-1)
 xq = collect(-4:by:4)
 aq = pdf.(Normal(), xq) ./ sum(pdf.(Normal(), xq))
+
+# Estep
+Pm = zeros(M)
+F = zeros(M)
+r = zeros(J, 5, M)
+prob = zeros(J, 5, M)
+for m in 1:M
+    for j in 1:J
+        for k in K[j]
+            prob[j,k,m] = pgrm(xq[m], α0[j], β0[j][k], β0[j][k+1])
+            pa  = prob[j,k,m] * aq[m]
+            r[j,k,m] = sum(pa  .* resp[:,j][resp[:,j] .== k])
+            
+        end
+    end
+
+end
+
 L = zeros(N, length(xq))
 Gim = zeros(N, length(xq))
 for i in 1:N
     for m in 1:M
         Li = 1.0
         for j in 1:J
-            Li *= pgrm(xq[m], α[j], β[j][resp[i,j]], β[j][resp[i,j]+1])
+            Li *= prob[j,k,m]
         end
         L[i,m] = Li
         Gim[i,m] = Li * aq[m]
     end
-    if(m == length(xq))
-        for i in 1:N
-            Gim[i,m] = Gim[i,m]/sum(Gim[i,:])
-        end
-    end
+#    for m in 1:M
+#        Gim[i,m] = Gim[i,m]/sum(Gim[i,:])
+#    end
 end
+sum(Gim, dims = 1)
