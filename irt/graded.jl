@@ -70,21 +70,20 @@ xq = collect(-4:by:4)
 aq = pdf.(Normal(), xq) ./ sum(pdf.(Normal(), xq))
 
 # Estep
-Pm = zeros(M)
-F = zeros(M)
-r = zeros(J, 5, M)
+
 prob = zeros(J, 5, M)
 for m in 1:M
     for j in 1:J
         for k in K[j]
             prob[j,k,m] = pgrm(xq[m], α0[j], β0[j][k], β0[j][k+1])
-            pa  = prob[j,k,m] * aq[m]
-            r[j,k,m] = sum(pa  .* resp[:,j][resp[:,j] .== k])
-            
+            # 内包表記は？
+            # prob[pgrm(xq[m], α0[j], β0[j][k], β0[j][k+1]) for j = 1:J, k = K[j], m = 1:M]
+            # pa  = prob[j,k,m] * aq[m]
+            # r[j,k,m] = sum(pa  .* resp[:,j][resp[:,j] .== k])
         end
     end
-
 end
+
 
 L = zeros(N, length(xq))
 Gim = zeros(N, length(xq))
@@ -92,13 +91,23 @@ for i in 1:N
     for m in 1:M
         Li = 1.0
         for j in 1:J
-            Li *= prob[j,k,m]
+            Li *= prob[j,:,m][resp[i,j]]
         end
         L[i,m] = Li
         Gim[i,m] = Li * aq[m]
     end
-#    for m in 1:M
-#        Gim[i,m] = Gim[i,m]/sum(Gim[i,:])
-#    end
 end
-sum(Gim, dims = 1)
+Pm = sum(Gim, dims = 2)
+
+F = r = zeros(J, 5, M)
+for m in 1:M
+    for j in 1:J
+        for k in K[j]
+            pa = prob[j,k,m] .* aq[m]
+            uijk = resp[:,j][resp[:,j] .== k]
+            r[j,k,m] = sum(pa * uijk)
+            F[j,k,m] = pa * length(uijk)
+        end
+    end
+end
+sum(F, dims = (1, 2, 3))
