@@ -11,7 +11,7 @@ f(3,4)
 function µ(x)
     y = sum(x)/length(x)
     return x # returnで指定した文字列を強制的に吐き出す
-    x = sum(x) # それ移行で値を変更しても無駄
+    x = sum(x) # それ以降で値を変更しても無駄
 end
 
 µ([1,2,3,4,5,6])
