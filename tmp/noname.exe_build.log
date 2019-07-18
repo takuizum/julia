@@ -1,0 +1,17 @@
+make: g++: Command not found
+make: g++: Command not found
+make: g++: Command not found
+make: g++: Command not found
+make: g++: Command not found
+make: g++: Command not found
+make: g++: Command not found
+make: g++: Command not found
+make: g++: Command not found
+make: g++: Command not found
+make: g++: Command not found
+make: g++: Command not found
+make: g++: Command not found
+make: g++: Command not found
+make: g++: Command not found
+make: g++: Command not found
+make: *** [make/command:3: bin/cmdstan/stanc.o] Error 127
