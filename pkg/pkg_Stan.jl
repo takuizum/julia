@@ -5,6 +5,7 @@ using Pkg; Pkg.add("Stan") # take several minutes.
 Pkg.add("Mamba.jl") # こちらもひつよう？
 
 ENV["CMDSTAN_HOME"] = "C:\\Users\\bc0089985\\cmdstan\\"
+ENV["CMDSTAN_HOME"] = "/Users/takuizum/cmdstan/"
 using Stan
 show(ENV)
 # Stan.set_cmdstan_home!("C:\\Users\\bc0089985\\cmdstan\\")
