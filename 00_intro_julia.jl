@@ -126,3 +126,42 @@ A = [-1.0 2.0; 2.0 -1.0]
 F = eigen(A)
 F.values
 F.vectors
+
+# Juliaの型システム
+# Juliaの型は意味付けだけでなく，関数の挙動も決定するので重要，とのこと。
+x = 42
+typeof(x)
+isa(x, Int64)
+isa(x, Int128) # false
+
+# User defined type
+# mutable struct
+mutable struct T
+    x::Int64
+end
+t = T(42)
+t.x
+
+# abstract type
+# Anyを除く全ての型はスーパータイプのサブタイプになっている。
+abstract type MyInteger <: Integer end
+typeof(MyInteger) # ?
+struct MyInt <: MyInteger
+    x::Int64
+end
+t2 = MyInt(73)
+t2.x
+
+# Union
+# サブタイプではなく，より柔軟に型をグループ化できる
+isa(32, Union{Int, String})
+isa("32", Union{Int, String})
+
+# Parametric Type
+mutable struct Point{T<:Real, S <: String}
+    x::T
+    y::S
+end
+Point(1, "d")
+
+# Singlton = ?
