@@ -2,11 +2,11 @@
 # git clone https://github.com/stan-dev/cmdstan.git --recursive
 
 using Pkg; Pkg.add("Stan") # take several minutes.
-Pkg.add("Mamba.jl") # こちらもひつよう？
+Pkg.add("Mamba") # こちらもひつよう？
 
 ENV["CMDSTAN_HOME"] = "C:\\Users\\bc0089985\\cmdstan\\"
 ENV["CMDSTAN_HOME"] = "/Users/takuizum/cmdstan/"
-using Stan
+using Stan, Mamba
 show(ENV)
 # Stan.set_cmdstan_home!("C:\\Users\\bc0089985\\cmdstan\\")
 # ENV["JULIA_CMDSTAN_HOME"] = "C:\\Users\\bc0089985\\cmdstan\\"
