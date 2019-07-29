@@ -1,7 +1,7 @@
 # Interact Plots
 using Pkg; Pkg.add ORCA PlotlyJS CSSUtil Interact
 
-using Interact, Plots, StatsFuns, PlotlyJS, ORCA, CSSUtil
+using Interact, Plots, StatsFuns, CSSUtil# , PlotlyJS, ORCA,
 
 @manipulate for α in slider(0.0001:0.001:3)
     θ = [-4:0.001:4;]
@@ -13,12 +13,14 @@ end
 #%%
 plotlyjs()
 gr() # こっちだとヌルヌル動くようになる。
-@manipulate for α = 0.0001:0.1:3, β = -4:0.1:4
+@manipulate for α = 0:0.01:3, β = -4:0.01:4, γ = 0:.01:1
         θ = [-4:0.001:4;]
-        prob = logistic.((θ.-β)*α)
-        plot(θ, prob)
+        prob = γ .+ (1-γ).*logistic.((θ.-β)*α)
+        plot(θ, prob,
+        label = "ICC",
+        xlabel = "theta", ylabel = "Correct probability",
+        xlims = (-4, 4), ylims = (0, 1))
     end
-end
 #%%
 
 ui = @manipulate throttle = 0.1 for r = 0:.05:1, g = 0:.05:1, b = 0:.05:1
