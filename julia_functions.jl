@@ -25,6 +25,10 @@ h([1,2,3])
 # anonymus function + map()
 map(x -> sqrt(x), [1,2,3,4,5,6,7,8,9])
 map(x -> sqrt(x), [1,2,3,4,5,6,7,8,0])
+# Use do function, is equivalent above example
+map([1:1:9;]) do x
+    sqrt(x)
+end
 
 # tuples: a built-in data structure that can hold any value, but cannot be modified.
 # It is constructer with commas and parentheses, and can be accessed by indexing.
