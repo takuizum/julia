@@ -29,27 +29,64 @@ string("abc", stri2)
 "$stri2 は夏目漱石の著作である"
 "1 + 2 = $(1 + 2)"
 
+# String Library
+uppercase("Hello")
+lowercase("BAKE")
+
 # 文字列のサーチ
 # 位置
 findfirst(isequal('a'), "abcdefabab", )
+findfirst("a", "abcdefabab", )
 findlast(isequal('a'), "abcdefabab")
+
 # マッチ
 occursin("A", "abcd")
 occursin("A", "Abcd")
+'a' ∈ "banana"
+"a" == 'a' # !?!?!?!?!?
+# マッチした文字列を取得
+function inboth(word1, word2)
+    for letter in word1
+        if letter ∈ word2
+            print(letter, " ")
+        end
+    end
+end
+inboth("apples", "berry")
+inboth("apples", "oranges")
+
+# 文字列比較
+"banana" > "apples"
+function wordcomp(lhs, rhs)
+    if lhs < rhs
+        print("$lhs comes BEFORE $rhs .")
+    elseif lhs > rhs
+        print("$lhs comes AFTER $rhs .")
+    else
+        print("All right, $lhs")
+    end
+end
+wordcomp("male", "female")
+wordcomp(1,2)
+
 # 複製
 repeat("abc", 5)
+"abc"^5
 # 結合
 join(["a", "b", "c"], " and ", ", ")
+"a"*"b"*"c"
 # minimal bite index
 "abcd" |> firstindex
 "bcda" |> firstindex
 # length
-["I", "am", "a", "super", "star"] |> length　# arrayにすれば単語単位で数える？というかArrayの長さかな？
+# arrayにすれば単語単位で数える？というかArrayの長さかな？
+["I", "am", "a", "super", "star"] |> length　
 "I am a super star" |> length # これだと1文字ごとに数える
 
 length("I am a super star" , 1, 5)
 
 # Regular Expressions
+# r""で正規表現を呼び出せるのか
 occursin(r"#", "# is a comment")
 match(r"#", "# is a comment")
 match(r"#", "sharp string is a comment") # returns nothing
