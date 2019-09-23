@@ -81,21 +81,22 @@ end
 
 mysqrt(10, 2) |> typeof
 
+# Exercise 7-2
 using DataFrames
 function testsqareroot(upto) # This function remains to update...
     # define sqrt function
-    # function mysqrt(x, a, ε = 1e-10)
-    #     # x is initial value.
-    #     # a is a value to figure out its square root.
-    #     while true
-    #         y = (x + a/x) / 2
-    #         if abs(y-x) < ε
-    #             return y
-    #             break
-    #         end
-    #         x = y
-    #     end
-    # end
+    function mysqrt(x, a, ε = 1e-10)
+        # x is initial value.
+        # a is a value to figure out its square root.
+        while true
+            y = (x + a/x) / 2
+            if abs(y-x) < ε
+                return y
+                break
+            end
+            x = y
+        end
+    end
     # initialize
     a = [1.0:1.0:upto;]
     mysqrt_vec = zeros(length(a))
@@ -112,6 +113,22 @@ end
 
 test = testsqareroot(20)
 
+# Exercise 7-3
+Meta.parse("sqrt(π)")
+
+function evalloop(eval_expr)
+    flag = true
+    while(flag)
+        Meta.parse(eval_expr)
+        print("Have you be satisfied with this iteration? If so, enter 'done'.")
+        txt = readline()
+        if(txt == "done")
+            flag = false
+        end
+    end
+    end
+
+evalloop("1+3")
 
 # 8. Strings
 fruit = "🍌"
@@ -135,4 +152,4 @@ str = "Julius Caesar";
 str[1:6]
 str[:]
 
-"1 + 2 = $(1 + 2)"  
+"1 + 2 = $(1 + 2)"
