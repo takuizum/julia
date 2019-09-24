@@ -17,7 +17,7 @@ function mcsampling(n)
     t = 1 # counter
     g(x) = (pdf(Normal(-1, 1), x) + pdf(Normal(1, 0.5), x)) / 2
 
-    xtmp = rand(Uniform(-4, 4), n) # sxis x
+    xtmp = rand(Uniform(-4, 4), n) # axis x
     ytmp = rand(Uniform(0, X), n)
     dens = g(xtmp)
     colour = map(i -> ytmp[i] < dens[i] ? 1 : 7., 1:n)
