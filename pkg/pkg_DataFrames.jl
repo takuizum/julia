@@ -78,6 +78,12 @@ sort!(df)
 # group_by
 groupby(df, :A)
 
+# eachcol
+# 列単位での処理をまとめて行うときに便利。
+collect(eachcol(df, true))
+sum.(eachcol(df)) # equivalent to colsums
+
+
 # Read and Write CSV
 # Write
 using CSV
@@ -87,3 +93,36 @@ CSV.write(dir*"TestDF.csv", df)
 
 using TableReader # CSV.read()でも可
 readcsv(dir*"TestDF.csv")
+
+# Joins
+#
+# join
+# join(df1, df2, ...)
+people = DataFrame(ID = [20, 40], Name = ["John Doe", "Jane Doe"])
+jobs = DataFrame(ID = [20, 40], Job = ["Lawyer", "Doctor"])
+join(people, jobs, on = :ID)
+
+jobs = DataFrame(ID = [20, 60], Job = ["Lawyer", "Astronaut"])
+# left_join
+# 一致したものは値を代入し，不一致はmissingを当てはめる。欠測させるのはdf2
+join(people, jobs, on = :ID, kind = :left)
+
+# right_join
+# 一致したものは値を代入し，不一致はmissingを当てはめる。欠測させるのはdf1
+join(people, jobs, on = :ID, kind = :right)
+
+# outer_join
+# 一致しないものはとりあえず欠測とし，df1とdf2の両方のデータを完全に保持して結合する。
+join(people, jobs, on = :ID, kind = :outer)
+
+# inner_join
+# 一致したものだけを残し，df1とdf2で一致しないものはdropさせる。
+join(people, jobs, on = :ID, kind = :inner)
+
+# anti_join
+# 完全一致したものを，df1の情報だけ残す。結合というよりもマッチングに近い。
+
+# semi_join
+# 一致しなかったものを，やはりdf1の情報だけを残す。
+
+# cross_join
