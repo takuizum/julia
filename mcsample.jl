@@ -26,7 +26,7 @@ function mcsampling(n)
     # return colour
 end;
 
-smp = mcsampling(10)
+smp = mcsampling(1000)
 
 histogram(smp[:,2], color = 9)
 
@@ -40,9 +40,9 @@ savefig("test.png")
 
 plot(x, y, label = "")
 # Need to install `ffmpeg` before use @ gif macro.
-@gif for i in 1:10
+anim = @gif for i in 1:100
     scatter!([smp[i,1]], [smp[i,2]], markercolor = smp[i,2] > smp[i,3] ? "red" : "blue",　label = "")
 end
 
 anim
-gif(anim, "test2.gif", fps = 30)
+gif(anim, "test2.gif", fps = 30) # dose not work
