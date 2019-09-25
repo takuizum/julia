@@ -7,15 +7,18 @@ df = DataFrame(A = 1:4, B = ["M", "F", "F", "M"], C = randn(4));
 df
 
 df.A
-df[:A]
-df[!,firstcolumn]
+df[:A] # is deprecated
+# use this one
+# どうやらこの!記法はVer1.2からのものらしい。Ver1.1.1では使用できない表記法である。
+df[!,:A]
+df[!,firstcolumn] # ?
 
 names(df)
 
 # Constructing Column by Column
 df = DataFrame()
 df.A = 1:10
-df[:B] = 11:20
+df[!, :B] = 11:20
 df
 
 # size
@@ -31,7 +34,9 @@ push!(df, (1, "M"))
 push!(df, [2, "N"])
 # DictのKeyがマッチしていれば，DataFrameの行追加に適用できる。
 push!(df, Dict(:B => "F", :A => 3))
-push!(df, Dict(:B => "F", :A => 3, :C => 1.0)) # 余計なKeyがあってもOK
+push!(df, Dict(:B => "F", :A => 3, :C => 1.0))
+# 余計なKeyがあってもOK
+# ただゆくゆくは廃止される機能なようである。
 
 # Working with Data Frames
 df = RDatasets.dataset("datasets", "iris")
@@ -45,21 +50,33 @@ DataFrame(a = 1:2, b = [1.0, missing],　
 # Taking a Subset of DF
 # row
 df[1:3, :]
-# column
-df[:, 1:2] == df[:, [:A, :B]]
-df[:, [:A]] |> typeof # returns DataFrame
-df[:, :A] |> typeof # returns vector
+# colum
+@show df |> names
+df[!, [1, 5]] == df[:, [:SepalLength, :Species]] # subset multiple columns
+df[!, [:Species]] |> typeof # returns DataFrame
+df[!, :Species] |> typeof # returns vector
+# Regular Expression match
+df[!, r"S"]  # dplyr::contains()に近い働き
 # select row
-df[df.A .> 500, :]
-df[df.A .== 1, :]
+df[df.SepalWidth .> 3, :]
+df[df.Species .== "setosa", :] # '' ≠ ""
+# Multipe conditions
+df[(df.PetalLength .> 0) .& (5 .< df.SepalLength .< 6), :]
 
 # Summarise
-df = DataFrame(A = 1:4, B = ["M", "F", "F", "M"])
 describe(df)
+using Statistics
+mean(df[!,:SepalWidth])
 
 # aggregate (colimn wise operations)
 df = DataFrame(A = 1:4, B = 4.0:-1.0:1.0)
 aggregate(df, [sum, prod, mean, length])
+
+# sorting
+sort!(df)
+
+# group_by
+groupby(df, :A)
 
 # Read and Write CSV
 # Write
