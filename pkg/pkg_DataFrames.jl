@@ -126,3 +126,68 @@ join(people, jobs, on = :ID, kind = :inner)
 # 一致しなかったものを，やはりdf1の情報だけを残す。
 
 # cross_join
+# keyを使用しないjoin
+join(people, jobs, kind = :cross, makeunique = true)
+
+# Match columns which has different name.
+# この例では`ID`と`IDNew`ということなる名前の列をマッチさせたい。
+# `left => right`か`tupple`記法が用いられる。
+a = DataFrame(ID = [20, 40], Name = ["John Doe", "Jane Doe"])
+b = DataFrame(IDNew = [20, 40], Job = ["Lawyer", "Doctor"])
+join(a, b, on = :ID => :IDNew, kind = :inner)
+join(a, b, on = (:ID, :IDNew), kind = :inner)
+
+# multiple columns, which has different name each other, matching
+a = DataFrame(City = ["Amsterdam", "London", "London", "New York", "New York"],
+                     Job = ["Lawyer", "Lawyer", "Lawyer", "Doctor", "Doctor"],
+                     Category = [1, 2, 3, 4, 5])
+b = DataFrame(Location = ["Amsterdam", "London", "London", "New York", "New York"],
+                     Work = ["Lawyer", "Lawyer", "Lawyer", "Doctor", "Doctor"],
+                     Name = ["a", "b", "c", "d", "e"])
+join(a, b, on = [(:City, :Location), (:Job, :Work)])
+# マッチさせたもの以外で，データフレームのどの1が重複していなかったのかを確認できる。
+# `validate`引数はマージしたいDF2種類をチェックするかどうか。
+join(a, b, on = [(:City, :Location), (:Job, :Work)], validate=(true, true))
+
+# Using `indicator`
+# マージしたあとにマージした列がdf1とdf2のどちらに（あるいは両方）に入っているのかを確認できる。
+a = DataFrame(ID = [20, 40], Name = ["John Doe", "Jane Doe"])
+b = DataFrame(ID = [20, 60], Job = ["Lawyer", "Doctor"])
+join(a, b, on=:ID, validate=(true, true), indicator=:source, kind=:outer)
+
+
+# The Split-Apply-Combine Strategy
+
+using RDatasets
+iris = RDatasets.dataset("datasets", "iris")
+
+# `groupby` = `by`が使える。
+# byはgroupbyとmapを組み合わせたみたいな関数。
+# by(DF, keys, cols => f(), sort = Bool)
+by(iris, :Species, mean = :SepalWidth => mean)
+# groupbyとcombineで同じことができる。
+combine(:SepalLength => mean, groupby(iris, :Species))
+# 複数列を使って新しい列にsummarizeするのはすこしややこしい記法
+# 第3引数の構造は[取り出したい列名のsymbol] => x(一時的なDFとして定義) -> hoge = fuga(x.sym1)/piyo(x.sym2)
+by(iris, :Species, [:PetalLength, :SepalLength] => x -> (a=mean(x.PetalLength)/mean(x.SepalLength),b=sum(x.PetalLength)))
+
+using StatsFuns
+function DFby(df::AbstractDataFrame)
+   by(df, :Species, μ = :SepalWidth => mean, σ² = :SepalLength => var)
+end
+# byとdoを組み合わせることもできるが，パフォーマンスは悪いので，これは避けるべき
+function DFdo(df::AbstractDataFrame)
+   by(df, :Species) do df
+               (m = mean(df.PetalLength), s² = var(df.PetalLength))
+           end
+        end
+
+using BenchmarkTools
+@benchmark DFby(iris)
+@benchmark DFdo(iris)
+
+# aggregate
+# aggregateを使えば，もう少しだけシンプルに記述ができる。
+# keyはIntでも可
+@show aggregate(iris, :Species, [length, mean])
+@show aggregate(iris, 5, [length, mean])
