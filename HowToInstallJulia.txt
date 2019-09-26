@@ -1,0 +1,14 @@
+1. Download Latest version [HERE](https://julialang.org)
+
+2. Run .exe without using Install Support Programs.
+
+3. (startup.jl have not to be edit.)
+
+4. Edit path to the latest version julia binary on Juno(Atom).
+
+5. Copy the old Julia environmental information folder and rename to the new one.
+   The environmental infomation is [HERE](C:\Users\bc0089985\.julia\environments)
+
+6. To edit jupyter environment, put `]` + `build IJulia` on REPL
+
+5. Finish!!
