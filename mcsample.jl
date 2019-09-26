@@ -1,5 +1,6 @@
 # mc sampling and plot
 
+using Pkg; Pkg.build("Plots") # ffmpegのインストールあとにrebuildする必要あり
 using Plots, Distributions, Optim
 
 f(x) = (pdf.(Normal(-1, 1), x) + pdf.(Normal(1, 0.5), x)) / 2
@@ -34,7 +35,7 @@ plot(x, y, label = "targe distribution")
 scatter!(smp[smp[:,2] .< smp[:,3],1], smp[smp[:,2] .< smp[:,3],2], markercolor = 1,　label = "accept")
 scatter!(smp[smp[:,2] .> smp[:,3],1], smp[smp[:,2] .> smp[:,3],2], markercolor = 2,　label = "reject")
 
-savefig("test.png")
+# savefig("test.png")
 
 # gif animation
 
