@@ -1,6 +1,6 @@
 # DataFrames
-using DataFrames
-using Random, RDatasets
+using DataFrames, RDatasets
+
 # How to create DF
 Random.seed!(0204)
 df = DataFrame(A = 1:4, B = ["M", "F", "F", "M"], C = randn(4));
@@ -191,3 +191,30 @@ using BenchmarkTools
 # keyはIntでも可
 @show aggregate(iris, :Species, [length, mean])
 @show aggregate(iris, 5, [length, mean])
+
+
+# Reshaping and Pivoting Data
+iris = RDatasets.dataset("datasets", "iris")
+
+# stack
+# wide data frames to long format
+# is equivalent to `pivot_longer`
+stack(iris, [:SepalLength, :SepalWidth, :PetalLength, :PetalWidth], variable_name = :MeasureType, value_name = :MeasureValue)
+# Third optional = id columns
+# Drop columns which is not specified
+stack(iris, [:SepalWidth, :SepalLength])
+stack(iris, [:SepalWidth, :SepalLength], :Species)
+
+# melt
+# altarnative reshape function
+# This function prefer id columns than measure_vars
+melt(iris, :Species, variable_name = :MeasureType, value_name = :MeasureValue)
+
+# unstack
+# Convert long formated data frame to wide format
+# first arg = DF
+# second arg = row key
+# third arg = col key
+# fourth arg = velue col
+long_df = melt(iris, :Species, variable_name = :MeasureType, value_name = :MeasureValue)
+unstack(long_df, :Species, :MeasureType, :MeasureValue)
