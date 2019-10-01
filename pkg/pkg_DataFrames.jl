@@ -151,6 +151,7 @@ join(a, b, on = [(:City, :Location), (:Job, :Work)], validate=(true, true))
 
 # Using `indicator`
 # マージしたあとにマージした列がdf1とdf2のどちらに（あるいは両方）に入っているのかを確認できる。
+
 a = DataFrame(ID = [20, 40], Name = ["John Doe", "Jane Doe"])
 b = DataFrame(ID = [20, 60], Job = ["Lawyer", "Doctor"])
 join(a, b, on=:ID, validate=(true, true), indicator=:source, kind=:outer)
