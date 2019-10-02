@@ -213,9 +213,20 @@ melt(iris, :Species, variable_name = :MeasureType, value_name = :MeasureValue)
 
 # unstack
 # Convert long formated data frame to wide format. `pivot_wider`, in R, is similar to this function.
-# first arg = DF
-# second arg = row key
-# third arg = col key
-# fourth arg = velue col
+# first arg = DF, second arg = row key, third arg = col key, fourth arg = velue col
 long_df = melt(iris, :Species, variable_name = :MeasureType, value_name = :MeasureValue)
 unstack(long_df, :Species, :MeasureType, :MeasureValue)
+
+# `stack` and `stackdf`
+stack(iris)==stackdf(iris)
+
+# Sorting
+# Add `!` command for sorting and inserting simultaneously.
+# Set `rev = true` to reverse the order.
+# The first and second passed argument, symbols and logicals, can be specified as vector.
+sort(iris)
+sort!(iris)
+first(iris, 7)
+sort!(iris, (:Species, :PetalLength), rev=(true, false))
+
+# Handling Categorical Data
