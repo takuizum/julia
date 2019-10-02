@@ -230,3 +230,13 @@ first(iris, 7)
 sort!(iris, (:Species, :PetalLength), rev=(true, false))
 
 # Handling Categorical Data
+
+# String vector
+v = ["Group A", "Group A", "Group A", "Group B", "Group B", "Group B"]
+# A type of CategoricalArray permit missing value and convert scring vector to CategoricalArrays
+using CategoricalArrays
+CategoricalArray(v)
+# Missing value is not recognized as level.
+CategoricalVector([missing, 'A', 'A', 'B', missing]) |> levels
+# level! function allows changing the order of appearance of the levels.
+CategoricalVector([missing, 'A', 'A', 'B', missing]) |> x->levels!(x, ['B', 'A'])
