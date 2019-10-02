@@ -212,7 +212,7 @@ stack(iris, [:SepalWidth, :SepalLength], :Species)
 melt(iris, :Species, variable_name = :MeasureType, value_name = :MeasureValue)
 
 # unstack
-# Convert long formated data frame to wide format
+# Convert long formated data frame to wide format. `pivot_wider`, in R, is similar to this function.
 # first arg = DF
 # second arg = row key
 # third arg = col key
