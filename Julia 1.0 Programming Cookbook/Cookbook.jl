@@ -43,8 +43,8 @@ function sum_by_row(x)
 end
 
 x = rand(10^4, 10^4)
-@btime sum_by_row(x) # 895.902 ms (1 allocation: 16 bytes)
-@btime sum_by_col(x) # 119.006 ms (1 allocation: 16 bytes)
+@time sum_by_row(x) # 895.902 ms (1 allocation: 16 bytes)
+@time sum_by_col(x) # 119.006 ms (1 allocation: 16 bytes)
 @btime sum(x) # もちろんこれが一番高速
 
 # loopの効率のよい実行方法
@@ -53,6 +53,7 @@ x = randn(10^6)
 # type 1
 # 一行で書くことがdきるが，あまりパフォーマンスは良くない。
 sum(v for v in x if v > 0)
+
 # type 2
 # つぎはloopにして，関数化する。
 function possum1(x)
