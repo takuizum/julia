@@ -239,4 +239,28 @@ CategoricalArray(v)
 # Missing value is not recognized as level.
 CategoricalVector([missing, 'A', 'A', 'B', missing]) |> levels
 # level! function allows changing the order of appearance of the levels.
-CategoricalVector([missing, 'A', 'A', 'B', missing]) |> x->levels!(x, ['B', 'A'])
+v = CategoricalVector([missing, 'A', 'A', 'B', missing]) 
+v |> x->levels!(x, ['B', 'A']) |> levels
+
+# Missing Data
+typeof(missing)
+x = [1, 2, missing]
+typeof(x) # type of ~~
+eltype(x) # element type of ~~
+# Exclude missing data
+skipmissing(x)
+x |> sum
+x |> skipmissing |> sum
+# replace missing value
+coalesce.(x, 999)
+# Drop missing records (for Data Frame only)
+df = DataFrame(i = 1:5,
+               x = [missing, 4, missing, 2, 1],
+               y = [missing, missing, "c", "d", "e"]
+               )
+dropmissing(df)
+dropmissing(df, :y)
+# `dropmissing` keeps the union type if set the `disallowmissing` option to `false`
+dropmissing(df, disallowmissing = false)
+# Using `Missings` pkg
+using Missings
