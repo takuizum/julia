@@ -3,7 +3,7 @@
 2. Run .exe without using Install Support Programs.
    Using Install Support Programs, Julia binary is launched "C:\Users\Default\AppData\Local".
 
-3. (startup.jl have not to be edit.)
+3. (startup.jl is not edited.)
 
 4. Edit path to the latest version julia binary (See step 2) on Juno(Atom).
 
