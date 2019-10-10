@@ -1,5 +1,5 @@
 # julia string
-＃ string
+# string
 Char(111) # unicode point character
 Char(0110)
 Char(0111)

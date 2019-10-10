@@ -1,5 +1,5 @@
 # DataFrames
-using DataFrames, RDatasets
+using DataFrames, RDatasets, Random
 
 # How to create DF
 Random.seed!(0204)
@@ -11,7 +11,7 @@ df[:A] # is deprecated
 # use this one
 # どうやらこの!記法はVer1.2からのものらしい。Ver1.1.1では使用できない表記法である。
 df[!,:A]
-df[!,firstcolumn] # ?
+df[!,1] # ?
 
 names(df)
 

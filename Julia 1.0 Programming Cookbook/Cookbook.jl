@@ -75,7 +75,7 @@ function possum2a(x)
     end
     s
 end
-possum2(x)
+possum2a(x)
 # type 4
 # add @simd macro
 function possum2b(x)

@@ -29,5 +29,5 @@ Polor(3.0, 1.0) # ただ型を返すだけ
 # さらにstructを制御して，与えた変数を表示するように細かく制御する。
 Base.show(io::IO, z::Polor) = print(io, z.r, "* exp", z.θ, "im")
 
-Base.show{T}(io::IO, ::MIME"text/plain", z::Polar{T}) = print(io, "Polar{$T} complex number:\n   ", z)
+# Base.show{T}(io::IO, ::MIME"text/plain", z::Polar{T}) = print(io, "Polar{$T} complex number:\n   ", z)
 Polar(3, 2.0)

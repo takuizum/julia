@@ -1,5 +1,5 @@
 # Interact Plots
-using Pkg; Pkg.add ORCA PlotlyJS CSSUtil Interact
+using Pkg; # Pkg.add -> ORCA PlotlyJS CSSUtil Interact
 
 using Interact, Plots, StatsFuns, CSSUtil, ORCA# , PlotlyJS
 

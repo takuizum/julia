@@ -1,7 +1,7 @@
 # multi-dimensional arrays
 
 # how to create a col vector
-]
+
 A = [1,2,3,4,5,6]
 B = [5
      4

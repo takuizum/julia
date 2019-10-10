@@ -1,6 +1,6 @@
 # ForwardDiff
 
-using ForwardDiff
+using ForwardDiff, StatsFuns
 
 function icc2pl(θ, α, β)
     p = zeros(length(θ))
