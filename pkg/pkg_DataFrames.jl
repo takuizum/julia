@@ -262,5 +262,17 @@ dropmissing(df)
 dropmissing(df, :y)
 # `dropmissing` keeps the union type if set the `disallowmissing` option to `false`
 dropmissing(df, disallowmissing = false)
+
 # Using `Missings` pkg
 using Missings
+Missings.replace(x, 999) |> collect
+
+# Determine type without missing data
+nonmissingtype(eltype(x))
+
+# Create missing data vector
+missings(10)
+missings(2, 3)
+missings(Int, 1, 2)
+
+# Data manipulation frameworks
