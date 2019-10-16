@@ -276,3 +276,16 @@ missings(2, 3)
 missings(Int, 1, 2)
 
 # Data manipulation frameworks
+# Handle DataFrames in Julia as if using `dplyr` in R
+import Pkg; Pkg.add("DataFramesMeta")
+using DataFramesMeta
+
+df = DataFrame(name=["John", "Sally", "Roger"],
+               age=[54., 34., 79.],
+               children=[0, 2, 4])
+
+@linq df |> 
+   # `filter`
+   where(:age .> 40) |>
+   # `select` & `mutate` 
+   select(NofChildren = :children, :name)
