@@ -289,3 +289,21 @@ df = DataFrame(name=["John", "Sally", "Roger"],
    where(:age .> 40) |>
    # `select` & `mutate` 
    select(NofChildren = :children, :name)
+
+# by
+df = DataFrame(key=repeat(1:3, 4), value=1:12)
+@linq df |>
+        where(:value .> 3) |>
+        by( :key, min = minimum(:value), max = maximum(:value)) |>
+        select(:key, range = :max - :min)
+
+# groupby
+df = DataFrame(a = repeat([1, 2, 3, 4], outer=[2]),
+                        b = repeat([2, 1], outer=[4]),
+                        c = 1:8);
+
+groupby(df, :a)
+
+# mutate
+@transform(df, d = :a + :b)
+
