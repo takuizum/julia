@@ -83,7 +83,7 @@ mysqrt(10, 2) |> typeof
 
 # Exercise 7-2
 using DataFrames
-function testsqareroot(upto) # This function remains to update...
+function testsqareroot(upto) 
     # define sqrt function
     function mysqrt(x, a, ε = 1e-10)
         # x is initial value.
@@ -126,7 +126,7 @@ function evalloop(eval_expr)
             flag = false
         end
     end
-    end
+end
 
 evalloop("1+3")
 
@@ -148,8 +148,49 @@ fruits[1]
 fruits[5]
 fruits[4]
 
+# Traversal
+# スタート地点から順番になにかの文字を取得して，何かを実行し，最後までそれを続けること。そのようなprocessingがtraversalである。
+# 数値的なインデックスを使うのか，それともベクトルの要素を取るのかで，書き方がちょっと異なる。
+index = firstindex(fruits)
+while index <= sizeof(fruits)
+    letter = fruits[index]
+    println(letter)
+    global index = nextind(fruits, index) # ここでグローバルを上書きしておく。
+end
+# さらに簡単なVer
+for letter in fruits
+    println(letter)
+end
+
+# String Slice
 str = "Julius Caesar";
 str[1:6]
 str[:]
 
+# String Interpolation
+# String内でJuliaオブジェクトを参照する。
 "1 + 2 = $(1 + 2)"
+
+# String Library
+uppercase("Hello, World")
+lowercase("ABCDSkofkofe")
+
+findfirst("a", "banana")
+findfirst("na", "banana")
+
+findnext("na", "banana", 4)
+
+# The ∈ Operator
+# Returns `true` if first arg appears in the second.
+'a' ∈ "banana"
+
+function inboth(word1, word2)
+    for letter in word1
+        if letter ∈ word2
+            print(letter, " ")
+        end
+    end
+end
+inboth("apples", "oranges")
+
+# 9. Case Study
