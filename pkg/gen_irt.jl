@@ -17,7 +17,7 @@ end;
 
 a = [1.0,2.0,1.0,2.0,1.0];
 b = [-2.0:1.0:2.0;];
-θ = rand(Normal(),1_0000);
+θ = rand(Normal(),1_000);
 irt2pl_gen(θ, a, b)
 trace = Gen.simulate(irt2pl_gen, (θ, a, b,))
 Gen.get_args(trace)
@@ -31,7 +31,11 @@ println(Gen.get_choices(trace))
     θ = @trace(normal(0, 1), :θ)
     for i in 1:N
         for j in 1:J
-            @trace( bernoulli(StatsFuns.logistic(a*(θ-b))), (:resp, i, j) )
+            if @trace( bernoulli(StatsFuns.logistic(a*(θ-b))), (:resp, i, j) )
+                1
+            else
+                0
+            end
         end
     end
     return n
@@ -41,8 +45,24 @@ irt2pl(100, 10)
 Gen.simulate(irt2pl, (100, 10) ) |> println
 
 
-@gen function foo(prob::Float64)
-    z1 = @trace(bernoulli(prob), :a)
-    z2 = @trace(bernoulli(prob), :b)
-    return z1 || z2
+# posterior inference
+function do_inference(model, resp, amount_of_computation)
+    N = size(resp, 1)
+    J = size(resp, 2)
+    observations = Gen.choicemap()
+    for i in 1:N
+        for j in 1:J
+            observations[(:resp, i, j)] = resp[i, j]
+        end
+    end
+    (trace, ) = Gen.importance_resampling(model, (N, J), observations, amount_of_computation);
+    return trace
 end
+
+
+data = irt2pl_gen(θ, a, b)
+data
+
+fit = do_inference(irt2pl, data, 1000)
+choices = Gen.get_choices(fit)
+choices[:b]
