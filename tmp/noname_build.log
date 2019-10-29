@@ -1,4 +1,0 @@
-ar: creating archive bin/cmdstan/libstanc.a
-ar: creating archive stan/lib/stan_math/lib/sundials_4.1.0/lib/libsundials_nvecserial.a
-ar: creating archive stan/lib/stan_math/lib/sundials_4.1.0/lib/libsundials_cvodes.a
-ar: creating archive stan/lib/stan_math/lib/sundials_4.1.0/lib/libsundials_idas.a
