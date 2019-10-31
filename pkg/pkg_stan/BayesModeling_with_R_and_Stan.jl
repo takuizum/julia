@@ -14,3 +14,17 @@ setnames!(matrix_2, map(x -> *("Col", x), string.([1:1:5;])), 2)
 @show matrix_2
 
 size(matrix_2)
+
+# read sample data
+using TableReader, HTTP, DataFrames
+res = HTTP.get("https://raw.githubusercontent.com/logics-of-blue/book-r-stan-bayesian-model-intro/master/book-data/2-4-1-beer-sales-1.csv")
+file_beer_sales_1 = readcsv(IOBuffer(res.body))
+data_list = [Dict("sales" => convert(Matrix, file_beer_sales_1), "N" => size(file_beer_sales_1, 1))]
+# read code
+Code = HTTP.get("https://raw.githubusercontent.com/logics-of-blue/book-r-stan-bayesian-model-intro/master/book-data/2-4-1-calc-mean-variance.stan")
+stan_code = Code.body |> IOBuffer |> x -> readlines(x, keep = true) |> join
+
+using Random
+stan_model = Stanmodel(model = stan_code, name = "beer_data", thin = 1, nchains = 1,
+                       num_warmup = 1000, num_samples = 2000)
+rc, chns, cnames = CmdStan.stan(stan_model, data_list)
