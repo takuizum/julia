@@ -1,5 +1,16 @@
 # run below code in Shell.
+# 1
 # git clone https://github.com/stan-dev/cmdstan.git --recursive
+# 2
+# Setting `make` utility program , for example, Rtools or MSYS2. and through a path to C++ compiler.
+# 3
+# Move to cmdstan directory and build cmdstan by entering `make build -j4
+# 4
+# Useful reference
+# https://nbviewer.jupyter.org/gist/genkuroki/57a301d715ac754a583f7e711f904f31
+
+
+
 
 using Pkg; Pkg.add("Stan") # take several minutes.
 using Pkg; Pkg.add("CmdStan") # take several minutes.
