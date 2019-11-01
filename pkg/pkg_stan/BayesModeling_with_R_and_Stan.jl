@@ -16,7 +16,7 @@ setnames!(matrix_2, map(x -> *("Col", x), string.([1:1:5;])), 2)
 size(matrix_2)
 
 # read sample data
-using TableReader, HTTP, DataFrames
+using TableReader, HTTP, DataFrames, CmdStan
 res = HTTP.get("https://raw.githubusercontent.com/logics-of-blue/book-r-stan-bayesian-model-intro/master/book-data/2-4-1-beer-sales-1.csv")
 file_beer_sales_1 = readcsv(IOBuffer(res.body))
 data_list = [Dict("sales" => vec(convert(Matrix, file_beer_sales_1)), "N" => size(file_beer_sales_1, 1))]
