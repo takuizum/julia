@@ -19,7 +19,7 @@ size(matrix_2)
 using TableReader, HTTP, DataFrames
 res = HTTP.get("https://raw.githubusercontent.com/logics-of-blue/book-r-stan-bayesian-model-intro/master/book-data/2-4-1-beer-sales-1.csv")
 file_beer_sales_1 = readcsv(IOBuffer(res.body))
-data_list = [Dict("sales" => vec(convert(Array, file_beer_sales_1)), "N" => size(file_beer_sales_1, 1))]
+data_list = [Dict("sales" => vec(convert(Matrix, file_beer_sales_1)), "N" => size(file_beer_sales_1, 1))]
 # read code
 Code = HTTP.get("https://raw.githubusercontent.com/logics-of-blue/book-r-stan-bayesian-model-intro/master/book-data/2-4-1-calc-mean-variance.stan")
 stan_code = Code.body |> IOBuffer |> x -> readlines(x, keep = true) |> join
