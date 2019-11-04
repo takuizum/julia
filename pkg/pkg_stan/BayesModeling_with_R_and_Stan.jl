@@ -119,6 +119,11 @@ sim_normal[:,idx,:]
 
 # simulated histogram droped by normal model
 sim_normal[:,100,:]
-histogram(sim_normal[:,100:104,1], layout = 4)
+histogram(sim_normal[:,100:110,:])
 
-CmdStan.convert_a3d(sim_normal, cnames)
+using StanDataFrames
+
+df = convert_a3d(sim_normal, cnames_normal, Val(:dataframe))
+# Valのなかのシンボルは5種類あるが，それぞれ適当なpkgを呼び出しておかないとエラーになる。
+using Mamba
+df = Mamda.convert_a3d(sim_normal, cnames_normal, Val(:mambachains))
