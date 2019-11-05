@@ -1,57 +1,54 @@
-# run below code in Shell.
-# 1
-# git clone https://github.com/stan-dev/cmdstan.git --recursive
-# 2
-# Setting `make` utility program , for example, Rtools or MSYS2. and through a path to C++ compiler.
-# 3
-# Move to cmdstan directory and build cmdstan by entering `make build -j4
-# 4
-# Useful reference
-# https://nbviewer.jupyter.org/gist/genkuroki/57a301d715ac754a583f7e711f904f31
+using Pkg
+Pkg.add(["Stan", "StanSample"]) # take several minutes.
 
+using Stan, StanSample
+# check env
+ # ENV["JULIA_CMDSTAN_HOME"]
 
-
-
-using Pkg; Pkg.add("Stan") # take several minutes.
-using Pkg; Pkg.add("CmdStan") # take several minutes.
-
-Pkg.add("Mamba") # こちらもひつよう？
-
-ENV["CMDSTAN_HOME"] = "C:\\Users\\bc0089985\\cmdstan\\"
-ENV["CMDSTAN_HOME"] = "/Users/takuizum/stan/cmdstan"
-using Stan
-using CmdStan
-show(ENV)
-# Stan.set_cmdstan_home!("C:\\Users\\bc0089985\\cmdstan\\")
-# ENV["JULIA_CMDSTAN_HOME"] = "C:\\Users\\bc0089985\\cmdstan\\"
-versioninfo()
-
-# Example
-bernoullimodel = "
+# eightschools
+eightschools ="
 data {
-  int<lower=0> N;
-  int<lower=0,upper=1> y[N];
+  int<lower=0> J; // number of schools
+  real y[J]; // estimated treatment effects
+  real<lower=0> sigma[J]; // s.e. of effect estimates
 }
 parameters {
-  real<lower=0,upper=1> theta;
+  real mu;
+  real<lower=0> tau;
+  real eta[J];
+}
+transformed parameters {
+  real theta[J];
+  for (j in 1:J)
+    theta[j] <- mu + tau * eta[j];
 }
 model {
-  theta ~ beta(1,1);
-  y ~ bernoulli(theta);
+  eta ~ normal(0, 1);
+  y ~ normal(theta, sigma);
 }
-
 "
 
-stanmodel = Stanmodel(num_samples=1200, thin = 4, model=bernoullimodel, name = "bernoulli")
-stanmodel |> display
-dat = [Dict("N" => 10, "y" => [0, 1, 0, 1, 0, 0, 0, 0, 0, 1])]
+schools8data = Dict("J" => 8,
+  "y" => [28,  8, -3,  7, -1,  1, 18, 12],
+  "sigma" => [15, 10, 16, 11,  9, 11, 10, 18],
+  "tau" => 25
+)
 
-rc, sim = stan(stanmodel, dat)
+sm = SampleModel("schools8", eightschools)
+(sample_file, log_file) = stan_sample(sm, data=schools8data)
 
-# Error Message is as below -------------------------------------
-# An error occurred while compiling the Stan program.
-# Please check your Stan program in variable 'bernoulli' and the contents of C:/Users/bc0089985/Documents/GitHub/julia/tmp/bernoulli.exe_build.log.
-# Note that Stan does not handle blanks in path names.
+if !(sample_file == nothing)
+  chns = read_samples(sm)
 
-describe(sim)
-plot(sim) # Good!
+  chn = set_section(chns, Dict(
+    :parameters => ["mu", "tau"],
+    :thetas => ["theta.$i" for i in 1:8],
+    :etas => ["eta.$i" for i in 1:8],
+    :internals => ["lp__", "accept_stat__", "stepsize__", "treedepth__", "n_leapfrog__",
+      "divergent__", "energy__"]
+    )
+  )
+
+  describe(chn)
+
+end
