@@ -132,19 +132,38 @@ select!(data, Not(:ID))
 for i in 1:size(data, 2)
     data[!,i] = convert(Array{Int64, 1}, data[:,i])
 end
-data = first(data, 100)
+# data = first(data, 100)
 
 # data = convert(Matrix{Int64}, data)
 # Describe generative model
-@model irt2pl(data,  N, J) = begin
-    p = tzeros(Real, 1)
+# Version 1
+@model irt2pl1(data,  N, J) = begin
     θ = tzeros(Real, N)
     α = β = tzeros(Real, J)
     # assign distributon to each element
-
     for i in 1:N
-        for j in 1:J
-            println("person", i, "item", j)
+        θ[i] ~ Normal(0, 1)
+    end
+    for j in 1:J
+        α[j] ~ LogNormal(0, 1)
+        β[j] ~ Normal(0, 2)
+    end
+    for i = 1:N
+        for j = 1:J
+            p = logistic(α[j]*(θ[i]-β[j]))
+            data[i,j] ~ Bernoulli(p)
+        end
+    end
+end
+
+# Version 2
+@model irt2pl2(data,  N, J) = begin
+    # p = tzeros(Real, 1)
+    θ = tzeros(Real, N)
+    α = β = tzeros(Real, J)
+    # assign distributon to each element
+    for i = 1:N
+        for j = 1:J
             θ[i] ~ Normal(0, 1)
             α[j] ~ LogNormal(0, 1)
             β[j] ~ Normal(0, 2)
@@ -160,4 +179,30 @@ num_chains = 4
 ϵ = 0.05
 τ = 10
 Turing.setadbackend(:forward_diff)
-chain = sample(irt2pl(data, N, J), NUTS(0.65), iterations);
+chain = sample(irt2pl(data, N, J), NUTS(0.9), iterations);
+chain = sample(irt2pl(data, N, J), HMC(ϵ, τ), iterations);
+chain[:θ]
+
+# Version 1 is very faster than 2.
+@time chain = sample(irt2pl1(data, N, J), HMC(ϵ, τ), iterations);
+@time chain = sample(irt2pl2(data, N, J), HMC(ϵ, τ), iterations);
+
+# MAP estimation
+function get_nlogp(model)
+    # Set up the model call, sample from the prior.
+    vi = Turing.VarInfo(model)
+
+    # Define a function to optimize.
+    function nlogp(sm)
+        spl = Turing.SampleFromPrior()
+        new_vi = Turing.VarInfo(vi, spl, sm)
+        model(new_vi, spl)
+        -new_vi.logp
+    end
+
+    return nlogp
+end
+
+using Optim
+# How to set initial value ?
+map_result = optimize(get_nlogp(irt2pl1(data, N, J)), LBFGS())
