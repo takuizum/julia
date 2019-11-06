@@ -44,6 +44,78 @@ chain = sample(coinflip(data), HMC(ϵ, τ), iterations);
 # Plot a summary of the sampling process for the parameter p, i.e. the probability of heads in a coin.
 histogram(chain[:p])
 
+# Gaussian Mixture Model
+using Distributions, StatsPlots, Random
+
+# Set a random seed.
+Random.seed!(3)
+# Construct 30 data points for each cluster.
+N = 30
+# Parameters for each cluster, we assume that each cluster is Gaussian distributed in the example.
+μs = [-3.5, 0.0]
+# Construct the data points.
+x = mapreduce(c -> rand(MvNormal([μs[c], μs[c]], 1.), N), hcat, 1:2)
+# Visualization.
+scatter(x[1,:], x[2,:], legend = false, title = "Synthetic Dataset")
+
+using Turing, MCMCChains
+# Turn off the progress monitor.
+Turing.turnprogress(false)
+# model
+@model GaussianMixtureModel(x) = begin
+    D, N = size(x)
+    # Draw the paramters for cluster 1.
+    μ1 ~ Normal()
+    # Draw the paramters for cluster 2.
+    μ2 ~ Normal()
+    μ = [μ1, μ2]
+    # Uncomment the following lines to draw the weights for the K clusters
+    # from a Dirichlet distribution.
+    # α = 1.0
+    # w ~ Dirichlet(2, α)
+    # Comment out this line if you instead want to draw the weights.
+    w = [0.5, 0.5]
+    # Draw assignments for each datum and generate it from a multivariate normal.
+    k = Vector{Int}(undef, N)
+    for i in 1:N
+        k[i] ~ Categorical(w)
+        x[:,i] ~ MvNormal([μ[k[i]], μ[k[i]]], 1.)
+    end
+    return k
+end
+
+Turing.setadbackend(:forward_diff)
+
+gmm_model = GaussianMixtureModel(x);
+gmm_sampler = Gibbs(100, PG(100), HMC(0.05, 10, :μ1, :μ2))
+tchain = mapreduce(c -> sample(gmm_model, gmm_sampler), chainscat, 1:3); # Error
+chns = sample(GaussianMixtureModel(x), HMC(0.05, 10, :μ1, :μ2), 1000) # Working
+density([chns[:μ1] chns[:μ2]])
+
+ids = findall(map(name -> occursin("μ", name), names(chns)));
+p=plot(chns[:, ids, :], legend=true, labels = ["Mu 1" "Mu 2"], colordim=:parameter)
+
+tchain = tchain[:, :, 1];
+
+# Helper function used for visualizing the density region.
+function predict(x, y, w, μ)
+    # Use log-sum-exp trick for numeric stability.
+    return Turing.logaddexp(
+        log(w[1]) + logpdf(MvNormal([μ[1], μ[1]], 1.), [x, y]),
+        log(w[2]) + logpdf(MvNormal([μ[2], μ[2]], 1.), [x, y])
+    )
+end
+
+contour(range(-5, stop = 3), range(-6, stop = 2),
+    (x, y) -> predict(x, y, [0.5, 0.5], [mean(tchain[:μ1].value), mean(tchain[:μ2].value)])
+)
+scatter!(x[1,:], x[2,:], legend = false, title = "Synthetic Dataset")
+
+assignments = collect(skipmissing(mean(tchain[:k].value, dims=1).data))
+scatter(x[1,:], x[2,:],
+    legend = false,
+    title = "Assignments on Synthetic Dataset",
+    zcolor = assignments)
 
 # IRT run test
 using Turing, RCall
@@ -56,34 +128,36 @@ data <- sim_data_2
 """
 @rget data
 # @linq data |> select!(2:31)
-deletecols!(data, :ID)
+select!(data, Not(:ID))
 for i in 1:size(data, 2)
-    data[:,i] = convert(Array{Int64, 1}, data[:,i])
+    data[!,i] = convert(Array{Int64, 1}, data[:,i])
 end
-first(data, 10)
+data = first(data, 100)
 
 # data = convert(Matrix{Int64}, data)
 # Describe generative model
 @model irt2pl(data,  N, J) = begin
+    p = tzeros(Real, 1)
     θ = tzeros(Real, N)
     α = β = tzeros(Real, J)
     # assign distributon to each element
 
     for i in 1:N
-        θ[i] ~ Normal(0, 1)
         for j in 1:J
+            println("person", i, "item", j)
+            θ[i] ~ Normal(0, 1)
             α[j] ~ LogNormal(0, 1)
             β[j] ~ Normal(0, 2)
-            x = α[j]*(θ[i]-β[j])
-            p = 1 / (1 + exp(-x))
-            # p = logistic(α[j]*(θ[i]-β[j]))
+            p = logistic(α[j]*(θ[i]-β[j]))
             data[i,j] ~ Bernoulli(p)
         end
     end
 end
 
 N, J = size(data)
-iterations = 1000
+iterations = 10
 num_chains = 4
-chain = sample(irt2pl(data, N, J), NUTS(), iterations);
-mapreduce(c -> sample(irt2pl(data), NUTS(2500, 200, 0.65) ), chainscat, 1:num_chains)
+ϵ = 0.05
+τ = 10
+Turing.setadbackend(:forward_diff)
+chain = sample(irt2pl(data, N, J), NUTS(0.65), iterations);
