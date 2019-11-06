@@ -43,3 +43,47 @@ chain = sample(coinflip(data), HMC(ϵ, τ), iterations);
 
 # Plot a summary of the sampling process for the parameter p, i.e. the probability of heads in a coin.
 histogram(chain[:p])
+
+
+# IRT run test
+using Turing, RCall
+using DataFramesMeta, DataFrames, StatsFuns
+
+# Get toy data
+R"""
+library(irtfun2)
+data <- sim_data_2
+"""
+@rget data
+# @linq data |> select!(2:31)
+deletecols!(data, :ID)
+for i in 1:size(data, 2)
+    data[:,i] = convert(Array{Int64, 1}, data[:,i])
+end
+first(data, 10)
+
+# data = convert(Matrix{Int64}, data)
+# Describe generative model
+@model irt2pl(data,  N, J) = begin
+    θ = tzeros(Real, N)
+    α = β = tzeros(Real, J)
+    # assign distributon to each element
+
+    for i in 1:N
+        θ[i] ~ Normal(0, 1)
+        for j in 1:J
+            α[j] ~ LogNormal(0, 1)
+            β[j] ~ Normal(0, 2)
+            x = α[j]*(θ[i]-β[j])
+            p = 1 / (1 + exp(-x))
+            # p = logistic(α[j]*(θ[i]-β[j]))
+            data[i,j] ~ Bernoulli(p)
+        end
+    end
+end
+
+N, J = size(data)
+iterations = 1000
+num_chains = 4
+chain = sample(irt2pl(data, N, J), NUTS(), iterations);
+mapreduce(c -> sample(irt2pl(data), NUTS(2500, 200, 0.65) ), chainscat, 1:num_chains)
