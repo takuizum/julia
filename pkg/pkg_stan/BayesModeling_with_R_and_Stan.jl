@@ -123,7 +123,8 @@ histogram(sim_normal[:,100:110,:])
 
 using StanDataFrames
 
-df = convert_a3d(sim_normal, cnames_normal, Val(:dataframe))
+df = convert_a3d(sim_normal[:,100:110,:], cnames_normal, Val(:dataframe))
+histogram(df)
 # Valのなかのシンボルは5種類あるが，それぞれ適当なpkgを呼び出しておかないとエラーになる。
 using Mamba
 df = Mamda.convert_a3d(sim_normal, cnames_normal, Val(:mambachains))
