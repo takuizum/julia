@@ -132,7 +132,7 @@ select!(data, Not(:ID))
 for i in 1:size(data, 2)
     data[!,i] = convert(Array{Int64, 1}, data[:,i])
 end
-# data = first(data, 100)
+data = first(data, 100)
 
 # data = convert(Matrix{Int64}, data)
 # Describe generative model
@@ -174,13 +174,27 @@ end
 end
 
 N, J = size(data)
-iterations = 1000
+iterations = 10
 num_chains = 4
 ϵ = 0.05
 τ = 10
 Turing.setadbackend(:forward_diff)
-chain = sample(irt2pl1(data, N, J), NUTS(0.9), iterations);
+# sampler option
+# https://turing.ml/dev/docs/library/
+
+# NUTS
+chain = sample(irt2pl1(data, N, J), NUTS(0.65), iterations);
 chain = sample(irt2pl1(data, N, J), HMC(ϵ, τ), iterations);
+chain = sample(irt2pl1(data, N, J), PG(10), iterations);
+chain = sample(irt2pl1(data, N, J), SMC(), iterations); # most fast?
+chain = sample(irt2pl1(data, N, J), HMCDA(0.15, 0.65), iterations); # Fast!!
+chain = sample(irt2pl1(data, N, J), MH(), iterations); # Fast, but unstable
+chain = sample(irt2pl1(data, N, J), SGHMC(), iterations); # Fast, but unstable
+
+
+
+chain[:α]
+
 chain[:θ]
 
 # Version 1 is very faster than 2.
