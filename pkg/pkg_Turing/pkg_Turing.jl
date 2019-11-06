@@ -174,7 +174,7 @@ end
 end
 
 N, J = size(data)
-iterations = 10
+iterations = 1000
 num_chains = 4
 ϵ = 0.05
 τ = 10
@@ -186,6 +186,7 @@ chain[:θ]
 # Version 1 is very faster than 2.
 @time chain = sample(irt2pl1(data, N, J), HMC(ϵ, τ), iterations);
 @time chain = sample(irt2pl2(data, N, J), HMC(ϵ, τ), iterations);
+chain = sample(irt2pl1(data, N, J), NUTS(0.9), iterations);
 
 # MAP estimation
 function get_nlogp(model)
