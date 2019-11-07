@@ -74,8 +74,26 @@ end
    #end
 end
 
+@model irt2pl4(data,  N, J) = begin
+   θ = Vector{Real}(undef, N)
+   α = β = Vector{Real}(undef, J)
+   p = Array{Real, 2}(undef, N, J)
+   # assign distributon to each element
+   θ ~ [Normal(0, 1)]
+   α ~ [LogNormal(0, 1)]
+   β ~ [Normal(0, 2)]
+   for j = 1:J
+       p[:,j] = @. logistic(α[j]*(θ-β[j]))
+   end
+   for i = 1:N
+       for j = 1:J
+           data[i,j] ~ Bernoulli(p[i,j])
+       end
+   end
+end
+
 N, J = size(data)
-iterations = 10
+iterations = 100
 num_chains = 4
 ϵ = 0.05
 τ = 10
@@ -85,3 +103,4 @@ Turing.setadbackend(:forward_diff)
 @time chain = sample(irt2pl1(data, N, J), HMC(ϵ, τ), iterations); # 2
 @time chain = sample(irt2pl2(data, N, J), HMC(ϵ, τ), iterations); # 3
 @time chain = sample(irt2pl3(data, N, J), HMC(ϵ, τ), iterations); # 1
+@time chain = sample(irt2pl4(data, N, J), HMC(ϵ, τ), iterations); # 1 - (slightly slow, but save more mamory)
