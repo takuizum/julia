@@ -14,32 +14,31 @@ for i in 1:size(data, 2)
     data[!,i] = convert(Array{Int64, 1}, data[:,i])
 end
 data = first(data, 100)
+data = convert(Matrix{Int64}, data)
 
 # data = convert(Matrix{Int64}, data)
 # Describe generative model
 @model irt2pl(data,  N, J) = begin
-    θ = Vector{Float64}(undef, N)
-    α = β = Vector{Float64}(undef, J)
-    # assign distributon to each element
-    θ ~ [Normal(0, 1)]
-    α ~ [LogNormal(0, 1)]
-    β ~ [Normal(0, 2)]
-    for i = 1:N
-        for j = 1:J
-            p = logistic(α[j]*(θ[i]-β[j]))
-            data[i,j] ~ Bernoulli(p)
-        end
-    end
-
-    # for j = 1:J
-    #    p = @. logistic(α[j]*(θ-β[j]))
-    #    data[!,j] ~ [ Bernoulli.(p) ]
-    #    # Right-hand side of a ~ must be subtype of Distribution or a vector of Distributions on line 51.
-    #end
+   θ = tzeros(Real, N)
+   α = β = tzeros(Real, J)
+   # assign distributon to each element
+   for i in 1:N
+       θ[i] ~ Normal(0, 1)
+   end
+   for j in 1:J
+       α[j] ~ LogNormal(0, 1)
+       β[j] ~ Normal(0, 2)
+   end
+   for i = 1:N
+       for j = 1:J
+           p = logistic(α[j]*(θ[i]-β[j]))
+           data[i,j] ~ Bernoulli(p)
+       end
+   end
 end
 
 N, J = size(data)
-iterations = 1000
+iterations = 2000
 num_chains = 4
 ϵ = 0.05
 τ = 10
@@ -50,21 +49,21 @@ Turing.setadbackend(:reverse_diff) # slower
 # https://turing.ml/dev/docs/library/
 
 # NUTS
-chain = sample(irt2pl(data, N, J), NUTS(0.65), iterations);
+chain_NUTS = sample(irt2pl(data, N, J), NUTS(0.65), iterations);
 # HMC
-chain = sample(irt2pl(data, N, J), HMC(ϵ, τ), iterations);
-chain = sample(irt2pl(data, N, J), PG(10), iterations);
+chain_HMC = sample(irt2pl(data, N, J), HMC(ϵ, τ), iterations);
+chain_PG = sample(irt2pl(data, N, J), PG(10), iterations);
 # Sepuential Monte Calro
 chain = sample(irt2pl(data, N, J), SMC(), iterations); # most fast?
-chain = sample(irt2pl(data, N, J), HMCDA(0.15, 0.65), iterations); # Fast!!
-chain = sample(irt2pl(data, N, J), MH(), iterations); # Fast, but unstable
-chain = sample(irt2pl(data, N, J), SGHMC(), iterations);
+chain_HMCDA = sample(irt2pl(data, N, J), HMCDA(0.15, 0.65), iterations); # Fast!!
+chain_MH = sample(irt2pl(data, N, J), MH(5000)); # Fast, but unstable and not support vectorize
+chain_SGHMC = sample(irt2pl(data, N, J), SGHMC(.01, .1), iterations);
+chain_IS = sample(irt2pl(data, N, J), IS(), 5000);
 
 # check estimate results
-chain[:α]
-chain[:β]
-chain[:θ]
-
+using StatsPlots
+describe(chain_IS)
+plot(chain_IS[:α][:,1,:])
 
 # MAP estimation
 function get_nlogp(model)
