@@ -17,7 +17,7 @@ using Pkg; Pkg.add("CmdStan") # take several minutes.
 Pkg.add("Mamba") # こちらもひつよう？
 
 ENV["CMDSTAN_HOME"] = "C:\\Users\\bc0089985\\cmdstan\\"
-ENV["CMDSTAN_HOME"] = "/Users/takuizum/stan/cmdstan"
+ENV["CMDSTAN_HOME"] = "/Users/takuizum/stan/cmdstan-2.21.0"
 using CmdStan
 show(ENV)
 # Stan.set_cmdstan_home!("C:\\Users\\bc0089985\\cmdstan\\")
