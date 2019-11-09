@@ -41,7 +41,7 @@ scatter!(smp[smp[:,2] .> smp[:,3],1], smp[smp[:,2] .> smp[:,3],2], markercolor =
 
 plot(x, y, label = "")
 # Need to install `ffmpeg` before use @ gif macro.
-anim = @gif for i in 1:100
+anim = @gif for i in 1:1000
     scatter!([smp[i,1]], [smp[i,2]], markercolor = smp[i,2] > smp[i,3] ? "red" : "blue",　label = "")
 end
 
