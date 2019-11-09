@@ -77,7 +77,7 @@ animal_num = res.body |> IOBuffer |> readcsv
 Code1 = HTTP.get("https://raw.githubusercontent.com/logics-of-blue/book-r-stan-bayesian-model-intro/master/book-data/2-5-1-normal-dist.stan")
 code_normal = Code1.body |> IOBuffer |> x->readlines(x, keep = true) |> join
 # Define stan code reading function
-read_git_stan = function(URL::String)
+function read_git_stan(URL::String)
     res = HTTP.get(URL)
     code = join(readlines(IOBuffer(res.body), keep = true))
     println("----------- Reading Stan Code -----------")
