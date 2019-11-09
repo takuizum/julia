@@ -5,13 +5,13 @@ inc(x) = x ÷ 30 + 1
 dec(x) = (x + 28) ÷ 30 + 1
 init_state(n) = [ rand([-1, 1]) for i in 1:n, j in 1:n]
 
-function ising_2d(N, size, kT, by = .01, marksize = 5, fontsize = 10)
+function ising_2d(N, size, kT, marksize = 5, fontsize = 10)
     s = init_state(size)
     ssum = zero(eltype(s))
     ROW = vcat( fill([1:1:size;], size)...)
     COL = [fill(i, size) for i in 1:size] |> x -> vcat(x...)
     coord = [1:1:size;]
-    @animate for kT_ in 1:by:kT, g in 1:N
+    @animate for kT_ in kT, g in 1:N
         i = rand(coord)
         j = rand(coord)
         dE = 2*s[i,j] * (s[i,dec(j)] + s[i,inc(j)] + s[dec(i),j] + s[inc(i),j])
@@ -37,7 +37,7 @@ function ising_2d(N, size, kT, by = .01, marksize = 5, fontsize = 10)
     end
 end
 
-anim = ising_2d(1e1, 30, 3)
+anim = ising_2d(1e2, 30, 3)
 gif(anim)
 scatter(ROW, COL, markercolor = state, markersize = 8, legend = false,
         aspect_ratio = 1)
