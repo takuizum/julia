@@ -12,8 +12,8 @@ select!(data, Not(:ID))
 for i in 1:size(data, 2)
     data[!,i] = convert(Array{Int64, 1}, data[:,i])
 end
-data = first(data, 100)
-# data = convert(Matrix{Int64}, data)
+data = first(data, 1000)
+data = convert(Matrix{Int64}, data)
 # Describe generative model
 # Version 1
 @model irt2pl1(data,  N, J) = begin
@@ -27,11 +27,9 @@ data = first(data, 100)
        α[j] ~ LogNormal(0, 1)
        β[j] ~ Normal(0, 2)
    end
-   for i = 1:N
-       for j = 1:J
-           p = logistic(α[j]*(θ[i]-β[j]))
-           data[i,j] ~ Bernoulli(p)
-       end
+   for i = 1:N, j = 1:J
+       p = logistic(α[j]*(θ[i]-β[j]))
+       data[i,j] ~ Bernoulli(p)
    end
 end
 
@@ -103,10 +101,8 @@ end
    for j = 1:J
        p[:,j] = @. logistic(α[j]*(θ-β[j]))
    end
-   for j = 1:J
-       for i = 1:N
-           data[i,j] ~ Bernoulli(p[i,j])
-       end
+   for j = 1:J, i = 1:N
+       data[i,j] ~ Bernoulli(p[i,j])
    end
 end
 
