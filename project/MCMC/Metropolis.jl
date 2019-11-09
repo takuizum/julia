@@ -1,6 +1,6 @@
 using Distributions, Random, Plots, Printf
 
-
+# ising simulation
 inc(x) = x ÷ 30 + 1
 dec(x) = (x + 28) ÷ 30 + 1
 init_state(n) = [ rand([-1, 1]) for i in 1:n, j in 1:n]
@@ -41,3 +41,30 @@ anim = ising_2d(1e2, 30, 3)
 gif(anim)
 scatter(ROW, COL, markercolor = state, markersize = 8, legend = false,
         aspect_ratio = 1)
+
+# MH sampler for Gaussian mean and variance
+using Turing, Distributions, StatsPlots
+@model gaussian_mean_var(y) = begin
+    μ ~ Normal(0, 3)
+    σ ~ Chisq(2)
+    N = size(y, 1)
+    for i in 1:N
+        y[i] ~Normal(μ, σ)
+    end
+end
+
+y = rand(Normal(0, 1), 1000)
+
+iterations = 10000
+chain_gmv_MH = sample(gaussian_mean_var(y), MH(), iterations)
+plot(chain_gmv_MH[[:μ, :σ]])
+
+iterations = 1000
+η = 0.65
+chain_gmv_NUTS = sample(gaussian_mean_var(y), NUTS(η), iterations)
+plot(chain_gmv_NUTS[[:μ, :σ]])
+
+iterations = 1000
+η = 0.65
+chain_gmv_HMC = sample(gaussian_mean_var(y), HMC(.01, 10), iterations)
+plot(chain_gmv_HMC[200:1000, [:μ, :σ], :])
