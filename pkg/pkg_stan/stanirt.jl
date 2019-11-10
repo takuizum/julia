@@ -23,6 +23,7 @@ function read_git_stan(URL::String)
     return code
 end
 
+# Sampling
 code = read_git_stan(
     "https://raw.githubusercontent.com/takuizum/Rstan/master/src/jml.stan"
 )
@@ -37,3 +38,22 @@ plot(sim[:,:"a.15",:])
 # EAP estimate
 eap = mean(sim, dim = 1)
 summarize(sim)
+
+
+# Marginal Model
+code = read_git_stan(
+    "https://raw.githubusercontent.com/takuizum/Rstan/master/src/mml_em.stan"
+)
+list = Dict(["N" => size(data, 1), "J" => size(data, 2), "y" => data, "M" => 21])
+mod = Stanmodel(name = "IRT_Marginal", model = code)
+@time rc, sim, cnames = stan(mod, list);
+
+# Check trace plot
+using StatsPlots
+plot(sim[:,:"a.15",:])
+
+# EAP estimate
+eap = mean(sim, dim = 1)
+summarize(sim)
+
+CmdStan.Variational()
