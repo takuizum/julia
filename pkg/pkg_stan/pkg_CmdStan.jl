@@ -22,7 +22,7 @@ ENV["CMDSTAN_HOME"] = "/Users/takuizum/cmdstan"
 using CmdStan
 show(ENV)
 # Stan.set_cmdstan_home!("C:\\Users\\bc0089985\\cmdstan\\")
-Stan.set_cmdstan_home!("/Users/takuizum/cmdstan")
+set_cmdstan_home!("/Users/takuizum/cmdstan")
 # ENV["JULIA_CMDSTAN_HOME"] = "C:\\Users\\bc0089985\\cmdstan\\"
 versioninfo()
 
