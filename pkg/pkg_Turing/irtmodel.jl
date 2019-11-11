@@ -13,7 +13,7 @@ select!(data, Not(:ID))
 for i in 1:size(data, 2)
     data[!,i] = convert(Array{Int64, 1}, data[:,i])
 end
-data = first(data, 100)
+data = first(data, 3000)
 data = convert(Matrix{Int64}, data)
 
 # data = convert(Matrix{Int64}, data)
@@ -59,11 +59,14 @@ chain_HMCDA = sample(irt2pl(data, N, J), HMCDA(0.15, 0.65), iterations); # Fast!
 chain_MH = sample(irt2pl(data, N, J), MH(5000)); # Fast, but unstable and not support vectorize
 chain_SGHMC = sample(irt2pl(data, N, J), SGHMC(.01, .1), iterations);
 chain_IS = sample(irt2pl(data, N, J), IS(), 5000);
+chain_Gibbs = sample(irt2pl(data, N, J), Gibbs(MH(:α), MH(:β), MH(:θ)), 1000);
+
 
 # check estimate results
 using StatsPlots
-describe(chain_IS)
-plot(chain_IS[:α][:,1,:])
+chain_Gibbs
+plot(chain_Gibbs[:β])
+mean(chain_Gibbs[:α][:,1,1]) # modeを計算したい。
 
 # MAP estimation
 function get_nlogp(model)
