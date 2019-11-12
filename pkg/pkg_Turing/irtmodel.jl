@@ -66,32 +66,25 @@ chain_Gibbs = sample(irt2pl(data, N, J), Gibbs(MH(:α), MH(:β), MH(:θ)), 1000)
 using StatsPlots
 chain_Gibbs
 plot(chain_Gibbs[:β])
-mean(chain_Gibbs[:α][:,1,1]) # modeを計算したい。
+mean(chain_Gibbs[:α][:,1,1])
+
+using KernelDensity
+kde(chain_Gibbs[:α][:,1,1])
 
 # MAP estimation
-function get_nlogp(model)
-    # Set up the model call, sample from the prior.
-    vi = Turing.VarInfo(model)
-
-    # Define a function to optimize.
-    function nlogp(sm)
-        spl = Turing.SampleFromPrior()
-        new_vi = Turing.VarInfo(vi, spl, sm)
-        model(new_vi, spl)
-        -new_vi.logp
-    end
-
-    return nlogp
+using Optim
+model = irt2pl(data, N, J)
+vi = Turing.VarInfo()
+model(vi, Turing.SampleFromPrior())
+function nlogp(sm)
+    vi.vals .= sm
+    model(vi, Turing.SampleFromPrior())
+    -vi.logp
 end
 
-using Optim
-# How to set initial value ?
-map_result = optimize(get_nlogp(irt2pl1(data, N, J)), LBFGS())
-
-get_nlogp(irt2pl1(data, N, J))
-
-model = irt2pl1(data, N, J)
-vi = Turing.VarInfo(model)
-spl = Turing.SampleFromPrior()
-Turing.VarInfo(vi)
-vi.logp
+sm_0 = Float64.(vi.vals)
+lb = [fill(-10., 3000); fill(0., 30)  ; fill(-10., 30)]
+ub = [fill(10., 3000);  fill(10., 30); fill(10., 30)]
+result = optimize((v)->nlogp(v), lb, ub, sm_0, Fminbox())
+result = optimize(nlogp, lb, ub, sm_0, NelderMead())
+result.minimizer[1001:1060]
