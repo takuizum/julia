@@ -239,7 +239,7 @@ CategoricalArray(v)
 # Missing value is not recognized as level.
 CategoricalVector([missing, 'A', 'A', 'B', missing]) |> levels
 # level! function allows changing the order of appearance of the levels.
-v = CategoricalVector([missing, 'A', 'A', 'B', missing]) 
+v = CategoricalVector([missing, 'A', 'A', 'B', missing])
 v |> x->levels!(x, ['B', 'A']) |> levels
 
 # Missing Data
@@ -284,10 +284,10 @@ df = DataFrame(name=["John", "Sally", "Roger"],
                age=[54., 34., 79.],
                children=[0, 2, 4])
 
-@linq df |> 
+@linq df |>
    # `filter`
    where(:age .> 40) |>
-   # `select` & `mutate` 
+   # `select` & `mutate`
    select(NofChildren = :children, :name)
 
 # by
@@ -305,5 +305,4 @@ df = DataFrame(a = repeat([1, 2, 3, 4], outer=[2]),
 groupby(df, :a)
 
 # mutate
-@transform(df, d = :a + :b)
-
+@linq transform(df, d = :a + :b)
