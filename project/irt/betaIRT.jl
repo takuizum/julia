@@ -68,11 +68,6 @@ function logirf(para::brm1, θ::Float64, y::Vector{Float64}, Mis::MissingIndicat
 end
 
 # marginal likelihood
-mutable struct mloglik_
-    lnP_im::Matrix{Float64}
-    lnP::Float64
-end
-
 function mloglik(para::brm2, θ::Vector{Float64}, W::Vector{Float64}, y::Matrix{Float64}, Mis::Vector{MissingIndicator})
     N, J = size(y)
     M = size(W, 1)
@@ -85,3 +80,7 @@ function mloglik(para::brm2, θ::Vector{Float64}, W::Vector{Float64}, y::Matrix{
     end
     return mloglik_(lnP_im, lnP)
 end
+
+# generate simulation response
+b_0 = rand(Normal(0,1), 10)
+a_0 = rand(LogNormal(0,1), 10)
