@@ -39,7 +39,7 @@ function irf(para::brm1, θ::Float64, y::Vector{Float64}, Mis::MissingIndicator)
     # shape1 = shape2 = zeros(eltype(y), length(y))
     shape1 = @. exp((θ - para.β[Mis.u] + para.τ[Mis.u])/2)
     shape2 = @. exp((para.β[Mis.u] - θ + para.τ[Mis.u])/2)
-    p = @. Distributions.pdf(Distributions.Beta(shape1, shape2), y[Mis.u])
+    p = @. Distributions.pdf.(Distributions.Beta(shape1, shape2), y[Mis.u])
     return p
 end
 # BRM1(for θ base plotting)
@@ -48,7 +48,7 @@ function irf(para::brm1, θ::Vector{Float64}, y::Float64)
     shape1 = @. exp((θ - para.β + para.τ)/2)
     shape2 = @. exp((para.β - θ + para.τ)/2)
     # @show shape1 shape2
-    p = @. Distributions.pdf(Distributions.Beta(shape1, shape2), y)
+    p = @. Distributions.pdf.(Distributions.Beta(shape1, shape2), y)
     return brm_plot(p, shape1[1], shape2[1])
 end
 # BRM1(for y base plotting)
@@ -57,7 +57,7 @@ function irf(para::brm1, θ::Float64, y::Vector{Float64})
     shape1 = @. exp((θ - para.β + para.τ)/2)
     shape2 = @. exp((para.β - θ + para.τ)/2)
     # @show shape1 shape2
-    p = @. Distributions.pdf(Distributions.Beta(shape1, shape2), y)
+    p = @. Distributions.pdf.(Distributions.Beta(shape1, shape2), y)
     return brm_plot(p, shape1[1], shape2[1])
 end
 
@@ -66,7 +66,7 @@ function irf(para::brm2, θ::Float64, y::Vector{Float64}, Mis::MissingIndicator)
     # shape1 = shape2 = zeros(eltype(y), length(y))
     shape1 = @. exp(para.α[Mis.u]*(θ - para.β[Mis.u])/2)
     shape2 = @. exp(para.α[Mis.u]*(para.β[Mis.u] - θ)/2)
-    p = @. Distributions.pdf(Distributions.Beta(shape1, shape2), y[Mis.u])
+    p = @. Distributions.pdf.(Distributions.Beta(shape1, shape2), y[Mis.u])
     return p
 end
 # BRM2(for θ base plotting)
@@ -75,7 +75,7 @@ function irf(para::brm2, θ::Vector{Float64}, y::Float64)
     shape1 = @. exp(para.α*(θ - para.β)/2)
     shape2 = @. exp(para.α*(para.β - θ)/2)
     # @show shape1 shape2
-    p = @. Distributions.pdf(Distributions.Beta(shape1, shape2), y)
+    p = @. Distributions.pdf.(Distributions.Beta(shape1, shape2), y)
     return brm_plot(p, shape1[1], shape2[1])
 end
 # BRM2(for y base plotting)
@@ -84,7 +84,7 @@ function irf(para::brm2, θ::Float64, y::Vector{Float64})
     shape1 = @. exp(para.α*(θ - para.β)/2)
     shape2 = @. exp(para.α*(para.β - θ)/2)
     # @show shape1 shape2
-    p = @. Distributions.pdf(Distributions.Beta(shape1, shape2), y)
+    p = @. Distributions.pdf.(Distributions.Beta(shape1, shape2), y)
     return brm_plot(p, shape1[1], shape2[1])
 end
 
@@ -93,7 +93,7 @@ function irf(para::brm3, θ::Float64, y::Vector{Float64}, Mis::MissingIndicator)
     # shape1 = shape2 = zeros(eltype(y), length(y))
     shape1 = @. exp(para.α[Mis.u]*(θ - para.β[Mis.u] + para.τ[Mis.u])/2)
     shape2 = @. exp(para.α[Mis.u]*(para.β[Mis.u] - θ + para.τ[Mis.u])/2)
-    p = @. Distributions.pdf(Distributions.Beta(shape1, shape2), y[Mis.u])
+    p = @. Distributions.pdf.(Distributions.Beta(shape1, shape2), y[Mis.u])
     return p
 end
 # BRM3(for θ base plotting)
@@ -102,7 +102,7 @@ function irf(para::brm3, θ::Vector{Float64}, y::Float64)
     shape1 = @. exp(para.α*(θ - para.β + para.τ)/2)
     shape2 = @. exp(para.α*(para.β - θ + para.τ)/2)
     # @show shape1 shape2
-    p = @. Distributions.pdf(Distributions.Beta(shape1, shape2), y)
+    p = @. Distributions.pdf.(Distributions.Beta(shape1, shape2), y)
     return brm_plot(p, shape1[1], shape2[1])
 end
 # BRM3(for y base plotting)
@@ -111,7 +111,7 @@ function irf(para::brm3, θ::Float64, y::Vector{Float64})
     shape1 = @. exp(para.α*(θ - para.β + para.τ)/2)
     shape2 = @. exp(para.α*(para.β - θ + para.τ)/2)
     # @show shape1 shape2
-    p = @. Distributions.pdf(Distributions.Beta(shape1, shape2), y)
+    p = @. Distributions.pdf.(Distributions.Beta(shape1, shape2), y)
     return brm_plot(p, shape1[1], shape2[1])
 end
 
@@ -120,7 +120,7 @@ irf(brm2([1.2, 2.0], [0.0, 2.0]), 1.0, [0.5, 0.2], MissingIndicator([1, 2],1))
 
 using Plots, Interact, CSSUtil, ORCA, Printf
 # ICC
-function ICC_plot(mod::DataType)
+function Response_prob_plot(mod::DataType)
     gr()
     if fieldnames(mod) == (:α, :β, :τ)
         @manipulate for α in -0:0.001:4, β in -4:.001:4, τ in -4:.001:4, y in 0:.001:1
@@ -148,7 +148,7 @@ function ICC_plot(mod::DataType)
         end
     end
 end
-function ICC_plot()
+function Response_prob_plot()
     gr()
     @manipulate for α in -0:0.001:4, β in -4:.001:4, τ in -4:.001:4, y in 0:.001:1
         res1 = irf(brm1([τ], [β]), [-4:.1:4;], y)
@@ -160,10 +160,10 @@ function ICC_plot()
         ylims!((0,Inf))
     end
 end
-ICC_plot(brm1)
-ICC_plot(brm2)
-ICC_plot(brm3)
-ICC_plot()
+Response_prob_plot(brm1)
+Response_prob_plot(brm2)
+Response_prob_plot(brm3)
+Response_prob_plot()
 
 # Genarative function
 plot([0:.01:1], irf(brm2(fill(1.0, 101), fill(0.0, 101)), 1.0, [0:.01:1;]))
@@ -197,7 +197,7 @@ function Generative_plot(mod::DataType)
 end
 function Generative_plot()
     gr()
-    @manipulate for α in -0:0.001:4, β in -4:.001:4, τ in -4:.001:4, θ in -4.0:.001:4.0
+    @manipulate for α in -0:0.001:4, β in -8:.001:8, τ in -8:.001:8, θ in -8:.001:8
         res1 = irf(brm1([τ], [β]), θ, [0:.01:1;])
         res2 = irf(brm2([α], [β]), θ, [0:.01:1;])
         res3 = irf(brm3([α], [β], [τ]), θ, [0:.01:1;])
@@ -217,25 +217,26 @@ Generative_plot()
 function logirf(para::brm2, θ::Float64, y::Vector{Float64}, Mis::MissingIndicator)
     shape1 = @. exp(para.α[Mis.u]*(θ - para.β[Mis.u])/2)
     shape2 = @. exp(para.α[Mis.u]*(para.β[Mis.u] - θ)/2)
-    p = @. Distributions.logpdf(Distributions.Beta(shape1, shape2), y[Mis.u])
+    p = @. Distributions.logpdf.(Distributions.Beta(shape1, shape2), y[Mis.u])
     return p
 end
 
 function logirf(para::brm1, θ::Float64, y::Vector{Float64}, Mis::MissingIndicator)
     shape1 = @. exp((θ - para.β[Mis.u] + para.τ[Mis.u])/2)
     shape2 = @. exp((para.β[Mis.u] - θ + para.τ[Mis.u])/2)
-    p = @. Distributions.pdf(Distributions.Beta(shape1, shape2), y[Mis.u])
+    p = @. Distributions.pdf.(Distributions.Beta(shape1, shape2), y[Mis.u])
     return p
 end
 
 # marginal likelihood
-function mloglik(para::brm2, θ::Vector{Float64}, W::Vector{Float64}, y::Matrix{Float64}, Mis::Vector{MissingIndicator})
+function mloglik(para, θ::Vector{Float64}, W::Vector{Float64}, y::Matrix{Float64}, Mis::Vector{MissingIndicator})
     N, J = size(y)
     M = size(W, 1)
     lnP = zero(Float64, 1)
+
     for m in 1:M
         for i in 1:N
-            lnP += sum(logirf(para, θ, W, y[i,:], Mis[i]))
+            lnP += sum(W[m] .* logirf(para, θ, y[i,:], Mis[i]))
         end
     end
     # return mloglik_(lnP_im, lnP)
@@ -250,8 +251,22 @@ function beta_response(para::brm2, θ)
     N = size(θ, 1)
     shape1 = [ exp(para.α[j]*(θ[i] - para.β[j])/2) for i in 1:N, j in 1:length(para.α) ]
     shape2 = [ exp(para.α[j]*(para.β[j] - θ[i])/2) for i in 1:N, j in 1:length(para.α) ]
-    # rand(Beta(shape1, shape2))
     N, J = size(shape1)
-    [rand(Beta(shape1[i], shape2[i])) for i in 1:N, j in 1:J]
+    data = Matrix{Union{Float64, Missing}}(undef, N, J)
+    [ data[i,j] = rand(Beta(shape1[i], shape2[i])) for i in 1:N, j in 1:J]
+    data[1, 1] = missing
+    data
 end
-beta_response(brm2(a_0, b_0), θ_0)
+
+test = beta_response(brm2(a_0, b_0), θ_0)
+function mis_ind_gen(data)
+    N = size(data, 1)
+    mis = [ MissingIndicator(findall(j -> j isa Number, data[i,:]), 1 ) for i in 1:N]
+end
+test2 = mis_ind_gen(test)
+
+# calc log lik
+nodes = [range(-4, 4, length = 31);]
+weights = pdf.(Normal(0, 1), nodes) ./ sum(pdf.(Normal(0, 1), nodes))
+mloglik(brm2(a_0, b_0), )
+# 個人ごとのEAPを計算して，その重みを算出する必要がある
