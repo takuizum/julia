@@ -306,3 +306,22 @@ groupby(df, :a)
 
 # mutate
 @linq transform(df, d = :a + :b)
+
+
+# tidyverse type handling
+using GLM, Gadfly
+@linq iris |>
+   where(5.0 .≥ :SepalWidth .≥ 3.0) |>
+   # by(:Species, d -> coef(lm(d.SepalLength, d.SepalWidth)))
+   # combine(df -> coef(lm(df.SepalLength, df.SepalWidth)))
+
+lm(iris.SepalLength, iris.SepalWidth)
+by(iris, :Species, d -> coef(lm(d.SepalLength, d.SepalWidth)))
+
+test = @linq iris |>
+   where(5.0 .≥ :SepalWidth .≥ 3.0) |>
+   groupby(:Species)
+
+test |> z -> map(x -> coef(lm(@formula(SepalLength ~ SepalWidth + PetalLength), x)), z)
+
+iris |> x -> lm(@formula(SepalLength ~ SepalWidth + PetalLength), x)
