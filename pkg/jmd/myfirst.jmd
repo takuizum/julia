@@ -1,0 +1,14 @@
+---
+title: My first jmd
+author: Takumi SHIBUYA
+date: 30th Nov 2019
+---
+
+## てすと
+
+これはJmdのテストです。
+
+```julia
+using Plots
+plot(randn(100))
+```
