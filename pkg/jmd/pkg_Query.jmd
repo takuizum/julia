@@ -1,0 +1,52 @@
+---
+title: How to handle DataFrame via `Query.jl`
+author: Takumi SHIBUYA
+date: 30th Nov 2019
+---
+
+# `Query.jl`とは
+[`Query.jl`](http://www.queryverse.org/Query.jl/stable/)は`DataFramesMeta`のようにデータフレームを操作するためのパッケージです。
+
+```julia
+using Query, DataFrames, RDatasets
+iris = dataset("datasets", "iris")
+first(iris, 5)
+```
+`Query.jl`には2つの異なる操作方法が存在します。
+1. Standalone query operators
+2. LINQ style queries
+
+----
+**Standalone query operators**  
+基本的にはマクロパイプでつなげていく感じです。処理の最後に`DataFrame`関数を噛ませないと，DataFrame形式で出力されません。
+```julia
+iris |>
+  @filter(_.PetalLength .> 1.4) |>
+  @groupby(_.Species) |>
+  @map({Species = key(_), SepalLengthTotal = sum(_.SepalLength)}) |>
+  DataFrame
+```
+
+
+
+
+
+```julia
+
+```
+
+
+
+
+
+```julia
+
+```
+
+
+
+
+
+```julia
+
+```
