@@ -315,13 +315,52 @@ using GLM, Gadfly
    # by(:Species, d -> coef(lm(d.SepalLength, d.SepalWidth)))
    # combine(df -> coef(lm(df.SepalLength, df.SepalWidth)))
 
-lm(iris.SepalLength, iris.SepalWidth)
-by(iris, :Species, d -> coef(lm(d.SepalLength, d.SepalWidth)))
+test = lm(@formula(SepalLength ~ SepalWidth), iris)
+plot(test)
+coef(test)
+# dont work
+by(iris, :Species, d -> lm(d.SepalLength, d.SepalWidth))
+by(iris, :Species, d -> coef(lm(@formula(SepalLength ~ SepalWidth + PetalLength), d)))
+test.Species
+@with(iris, :SepalLength.-5.0)
 
+using StatsBase
 test = @linq iris |>
    where(5.0 .≥ :SepalWidth .≥ 3.0) |>
-   groupby(:Species)
+   groupby(:Species) |>
+   transform(StdSepalLn = (:SepalLength .- mean(:SepalLength)) ./ variation(:SepalLength)) |>
+   by(:Species, mean = mean(:StdSepalLn), var = variation(:StdSepalLn))
+vriation(test.StdSepalLn)
+mean(test.StdSepalLn)
 
+test = groupby(iris, :Species)
+map(first, test)
+res = map(x -> coef(lm(@formula(SepalLength ~ SepalWidth), x)), test) |> DataFrame
+plt[2, :x1]
+
+plot(res, intercept = [1], slope = [2], Geom.abline(color="red", style=:dash))
 test |> z -> map(x -> coef(lm(@formula(SepalLength ~ SepalWidth + PetalLength), x)), z)
-
 iris |> x -> lm(@formula(SepalLength ~ SepalWidth + PetalLength), x)
+
+# エクセルデータを読み込む
+using ExcelReaders
+dataxl = readxl(IOBuffer(HTTP.get("https://www.cuc.ac.jp/~nagaoka/2011/ouyou/03/baseball/baseball.xlsx").body), "sheet1!A1:J831")
+dlxl = download("https://www.cuc.ac.jp/~nagaoka/2011/ouyou/03/baseball/baseball.xlsx")
+dat = readxlsheet(dlxl, "Sheet1")
+DataFrame(dat)
+readxlsheet("data/baseball.xlsx", "Sheet1")
+readxl(openxl(dlxl), "Sheet1!A1:J831")
+
+using ExcelFiles, DataFrames
+dat = DataFrame(load("data/baseball.xlsx", "Sheet1"))
+dat = DataFrame(load("data/baseballMis.xlsx", "Sheet1"))
+[eltype(dat[:,i]) for i in 1:10]
+plot(dat, x = "身長", y = "体重", Geom.point)
+
+using Gadfly, DataFrames
+A = DataFrame(ID = [1,2,3,4,5,8,9,10], Japanese = [10, missing, 30, 40, 50, 80, 90, 100], Math = [30, 40, 20, 50, 10, 60, 90, 60])
+B = DataFrame(ID = [7,6,5,4,3,2,1], Books = [20, 1, 10, 5, 7, 3, missing],
+              Parents = CategoricalArray(["大卒", "大卒", "高卒", missing, "大卒", "高卒", "高卒"]))
+D = join(A, B, on = :ID,  kind = :outer)
+DataFrames.stack(D, [:Japanese, :Math]) |>
+   x -> plot(x, xgroup = "variable", x = "value", Geom.subplot_grid(Geom.histogram))
