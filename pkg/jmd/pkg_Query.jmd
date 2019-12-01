@@ -6,6 +6,7 @@ date: 30th Nov 2019
 
 # `Query.jl`とは
 [`Query.jl`](http://www.queryverse.org/Query.jl/stable/)は`DataFramesMeta`のようにデータフレームを操作するためのパッケージです。
+実は必ずしもデータフレームの操作に限らず配列でも扱えます。
 
 ```julia
 using Query, DataFrames, RDatasets
@@ -17,36 +18,77 @@ first(iris, 5)
 2. LINQ style queries
 
 ----
-**Standalone query operators**  
-基本的にはマクロパイプでつなげていく感じです。処理の最後に`DataFrame`関数を噛ませないと，DataFrame形式で出力されません。
+# **Standalone query operators**
+
+基本的にはマクロ&パイプでつなげていく感じ操作をつなげていきます。処理の最後に`DataFrame`関数を噛ませないと，DataFrame形式で出力されません。
 ```julia
 iris |>
   @filter(_.PetalLength .> 1.4) |>
   @groupby(_.Species) |>
-  @map({Species = key(_), SepalLengthTotal = sum(_.SepalLength)}) |>
+  @map({Species = key(_), SepalLengthTotal = sum(_.SepalLength)}) |> # keyはグループ分けした要素をgetfieldで取得する関数。
   DataFrame
 ```
 
+## Command 一覧
 
+- `@map` groupbyしたquery resultに対して用い，指定した列に対してグループごとに任意の関数を適用し，列として返します。関数は無名関数で，一つの要素を受け取る必要があります。関数を適用せず複数の列を指定して返す場合`{}`で囲む必要があります。
+- `@filter` 指定した列に対して特定の条件でフィルタリングします。
+- `@groupby` 特定の列の要素が同じものどうしでまとまりを作成します。`@groupby`したあとに`@map`でグループごとに統計処理をしたりすることが一般的な使い方です。
+- `@orderby` 指定した列の要素でソートをかけます。デフォルトは昇順ですが，降順に変換する亜種`@orderby_descending`もあります。
+- `@thenby` `@orderby`でソートしたオブジェクトを受け取り，さらに新たな列をソートする。もし与えられたデータフレームがソートされていなければ，`@orderby`関数と同じように機能します。
+- `@groupjoin`
+- `@join`
+- `@mapmany` 引数の中に現れるアンダースコア`_`は通常の`map(i -> funs(x[i]), I)`における`i`の役割を果たしています。
+- `@take` 必ず整数値を引数にとり，何行目までデータを読み込むかを指定します。
+- `@drop`　`@take`の逆バージョンで，何行目までのデータを落とすかを指定します。
+- `@unique` 指定した列の中でユニークな要素だけを保持します。
+- `@select` `DataFramesMeta`の`select`よりもより`dplyr`チックな操作が可能なマクロ。列の位置，正規表現マッチ，symbolなどで任意の列を指定できる。不要な列は`-`をprefixにつけるだけ。
+- `@rename` 既存の列を上書きする形で，新しい名前の列を作成して返す。名前は必ずsymbolで指定し，`=`ではなく`=>`でつなぐ。`:old => :new`
+- `@mutate` 既存の列名に任意の関数を当てて，新しい列名とともに返す。新しい列の名前が既存のものと同じ場合，上書きされる。`new = funs(old)`という感じ。
 
+## **特殊な表記**
 
+アンダースコアはstandalone query syntaxのみで動作する構文で，無名関数の表現をより簡潔に表現してくれます。
+例えば`@map(i -> i.a)`は`@map(_.a)`と書くことができます。パイプで連続した処理を行うときは，無名関数で連続してデータフレームを渡していくことになりますが，この表現を使うことで`->`部分の余分な表現を短くしてくれています。
+- `_`　第一引数の要素
+- `__` 第二引数の要素
 
+---
+## `@map`
 ```julia
-
+iris |> @map(_.SepalLength^2) |> collect
+iris |> @map(_.SepalLength + _.PetalLength) |> collect
+```
+---
+## `@filter`
+```julia
+using StatsBase
+iris |>
+  @filter(_.PetalLength .> 1.4) |>
+  @groupby(_.Species) |>
+  @map({Species = key(_), SepalLengthMean = mean(_.SepalLength)}) |>
+  DataFrame
+```
+---
+## `@select`
+```julia
+iris |> @select(-:Species) |> DataFrame |> x -> first(x, 5)
+iris |> @select(occursin("Sepal")) |> DataFrame |> x -> first(x, 5)
+iris |> @select(-1, -2) |> DataFrame |> x -> first(x, 5)
+```
+---
+## `@rename`
+```julia
+iris |> @rename(:SepalLength => :NewSepalLength ) |> DataFrame |> x -> first(x, 5)
+```
+---
+## `@mutate`
+```julia
+iris |> @mutate(SepalLendthDouble = 2 * _.SepalLength,
+                SepalLength = - _.SepalLength) |> DataFrame |> x -> first(x, 5)
+using GLM
+iris |> @mutate(LM = coef(lm(@formula(SepalLength ~ SepalWidth), _)))
 ```
 
-
-
-
-
-```julia
-
-```
-
-
-
-
-
-```julia
-
-```
+---
+# LINQ Style Query Commands
