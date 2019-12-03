@@ -1,5 +1,5 @@
 using Weave
-
+# pandocを使うなら別途インストールして，必要に応じてパスを通しておく必要がある。
 pwd()
 weave("pkg/jmd/myfirst.jmd", doctype = "pandoc2html", out_path = :doc)
 # ipynb to html
