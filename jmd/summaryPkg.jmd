@@ -4,10 +4,14 @@ author: "@takuizum"
 date: 5th Dec 2019
 ---
 
-# juliaのパッケージ
+※このドキュメントはjuliaのWeave.jlで作成しています。
+
+どうも["@takuizum"](https://twitter.com/takuizum)です。
 
 
-# パッケージの使い方
+5日目のカレンダーが空白だったので埋めます。この記事では個人的によく使うパッケージを紹介します。あまり深く突っ込んだことは書いてないです。「ほーん，こんなもんか」くらいに読んでください。
+
+
 
 ## パッケージの追加方法
 
@@ -47,6 +51,8 @@ Gadfly.plot(DataFrame(x = 1:100, y = y), x = :x, y = :y , Geom.line)
 ```julia
 import Statistics.std
 std([1:1:10;])
+```
+```julia
 var() # 同じStatisticsにあっても，こちらは使えない。
 ```
 
@@ -55,7 +61,7 @@ var() # 同じStatisticsにあっても，こちらは使えない。
 ## よく使うパッケージ一覧
 
 いち心理学系ユーザーが個人的によく使う程度なので，範囲は十分ではないです。
-野良ではない公式のパッケージは[](https://pkg.julialang.org/docs/)で調べることができます。
+野良ではない公式のパッケージは[ここ](https://pkg.julialang.org/docs/)で調べることができます。
 
 例えばおなじベイズ推論を扱うパッケージでも，Turingは公式にありますがGenはgitから引っ張ってくる必要がある野良パッケージに当たります。
 
@@ -79,7 +85,7 @@ Statistics.std(1:10, corrected = false) # デフォルトだと不偏標準偏�
 julia1.3から`mean`関数に，任意の関数`f`を適用してから平均をとる機能が追加されました（誰得？）
 
 ```julia
-mean(√,[1 2 3;4 5 6])
+mean(√,[1 2 3;4 5 6], dims = 2)
 ```
 
 ----
@@ -118,15 +124,15 @@ counts(sample([1:1:100;], 100), 1:100)
 $\ln{Γ}$を計算したいときに`lgamma`よりも`logabsgamma`を使うとより高速に計算できます。ちなみに`lgamma`を使うと以下のような警告が出ます。
 `"`lgamma(x::Real)` is deprecated, use `(logabsgamma(x))[1]` instead."`
 
-でも`loggamma`を使ったほうがより速いみたいです。
+でも`loggamma`を使ったほうがより速いみたいです。`logabsgamma`はベクトルで計算するとTuplesのベクトルが出てきて，ちょっと厄介です。
 
 ```julia
 using SpecialFunctions
 log(1);gamma(1);lgamma(1);loggamma(1);logabsgamma(1);# precompile
-@time [log(gamma(x)) for x in 0.001:0.001:10]
-@time [lgamma(x) for x in 0.001:0.001:10]
-@time [loggamma(x) for x in 0.001:0.001:10]
-@time [(logabsgamma(x))[1] for x in 0.001:0.001:10];
+@time log.(gamma.(0.001:0.001:10))
+@time lgamma.(0.001:0.001:10)
+@time loggamma.(0.001:0.001:10)
+@time (logabsgamma.(0.001:0.001:10));
 ```
 
 ---
@@ -139,8 +145,9 @@ log(1);gamma(1);lgamma(1);loggamma(1);logabsgamma(1);# precompile
 ```julia
 using Distributions
 using Random
-
-rand(Beta(1, 3), 1000) |> x -> histogram(x, normalize = true)
+Random.seed!(1205)
+d = rand(Beta(1, 3), 10000)
+histogram(d, normalize = true)
 plot!(0:.01:1, pdf.(Beta(1, 3), 0:.01:1))
 
 ```
@@ -148,21 +155,51 @@ plot!(0:.01:1, pdf.(Beta(1, 3), 0:.01:1))
 他にもサンプルデータに確率分布をフィットさせて，パラメタを最尤推定することも簡単にできます（任意の制約でMAP推定もできるみたいです）。
 
 ```julia
-d = rand(Beta(1, 3), 1000)
 fit(Beta, d)
+```
 
+```julia
 # optimで最尤推定
 using Optim
 fn(x, par) = -sum(logpdf.(Beta(par[1], par[2]), x))
-opt = optimize(x -> fn(d, x), [1.0, 1.0], Newton())
+opt = optimize(x -> fn(d, x), [1.5, 4.0])# 結構初期値に敏感....
 opt.minimizer
 ```
+
+---
+
+### ForwardDiff & LinearAlgebra
+
+juliaで高速な数値微分を提供してくれるパッケージです。gradientやhessianの評価を近似的に，お気楽にできるのでとても重宝しています。
+
+一緒に使っている`LinearAlgebra`も，固有値や行列の操作をするときによく使います。心理学徒は大好きですよね，固有値。
+
+試しに先程最適化した値の標準誤差を計算してみます。
+
+```julia
+using ForwardDiff, LinearAlgebra
+hess = ForwardDiff.hessian(x -> fn(d, x), opt.minimizer)
+sqrt.(LinearAlgebra.diag(inv(hess)))
+```
+
 
 ----
 
 ### Gadfly
 
+[LINK](http://gadflyjl.org/stable/)
+
 R言語にあるggplot2ライクなプロットを書くことができます。
+
+GadflyはThe Grammar Of Graphicsというグラフの文法を元に設計されており，グラフの様々な要素を重ねていくスタイルです。
+
+下のプロットの例ではpointにlmで回帰直線を引いています。グループのラベルがあるときに，グループごとに可視化...というのも楽にできます。
+
+```julia
+using Gadfly, RDatasets
+iris = RDatasets.dataset("datasets", "iris")
+Gadfly.plot(iris, x=:SepalLength, y=:PetalLength, Geom.point, color=:Species, Geom.smooth(method=:lm))
+```
 
 ----
 
@@ -172,7 +209,7 @@ R言語にあるggplot2ライクなプロットを書くことができます。
 
 統計分析用のプロットパッケージです。
 
-周辺分布をかんたんに書けたりします。他にもインタラクティブなプロットもできるみたいです。
+周辺分布をかんたんに書けたりします。他にもインタラクティブなプロットもできるみたいです。あまり使ったことがないですが，個人的に注目しているパッケージです。
 
 ```julia
 using StatsPlots, Distributions
@@ -182,9 +219,8 @@ StatsPlots.marginalhist(sort(rand(Normal(), 1000)), sort(rand(Normal(), 1000)))
 データフレーム操作パッケージ`Query`と連携することで，データをざっと要約することもできます。
 
 ```julia
-using Query, RDatasets
+using Query
 # データのざっとした要約
-iris = RDatasets.dataset("datasets", "iris")
 @df iris corrplot([:SepalLength :SepalWidth :PetalLength :PetalWidth], grid = false)
 ```
 
@@ -195,3 +231,54 @@ iris = RDatasets.dataset("datasets", "iris")
 [LINK](https://turing.ml/dev/)
 
 先日のjulia Tokyo 10でも紹介があった，juliaによるjuliaのためのjuliaなPPLです。特徴は生成モデルの記述によるかんたんな確率モデルの表現だけで，比較的複雑な（階層的な）モデルを表現できるところです。
+
+下のコードは項目反応理論の2パラメタロジスティックモデルです。項目反応モデルはテストやアンケートに受検者が反応する確率をロジスティックモデルで表現しています。
+
+モデルは書きましたが，このモデルをMCMCすると，パラメタ数が多すぎて推定にめっちゃ時間取られるので，ものすごくサンプル数とチェイン数を少なくしています。なので推定精度はダメダメです。
+
+なお，本当はこのモデルを分析するためには，2000人くらいのデータが必要です。
+
+```julia; cache = true
+using Turing, StatsFuns, Distributions
+
+# simulation data
+function respGen(N, J)
+    θ = rand(Normal(), N)
+    a = rand(LogNormal(), J)
+    b = rand(Uniform(-2, 2), J)
+    resp = zeros(Int64, N, J)
+    for i in 1:N
+        for j in 1:J
+            resp[i,j] = rand(Uniform(0.0,1.0),1)[1] < StatsFuns.logistic(a[j]*(θ[i]-b[j])) ? 1 : 0
+        end
+    end
+    return resp, θ, a, b
+end
+
+@model irt2pl(data,  N, J) = begin
+   θ = Vector{Float64}(undef, N)
+   α = β = Vector{Float64}(undef, J)
+   # assign distributon to each element
+   θ ~ [Normal(0, 1)]
+   α ~ [LogNormal(0, 1)]
+   β ~ [Normal(0, 2)]
+   for i = 1:N
+       for j = 1:J
+           p = logistic(α[j]*(θ[i]-β[j]))
+           data[i,j] ~ Bernoulli(p)
+       end
+   end
+end
+
+data, θ, a, b = respGen(200, 20);
+N, J = size(data)
+iterations = 100
+num_chains = 1
+Turing.setadbackend(:forward_diff)
+chain_HMCDA = sample(irt2pl(data, N, J), HMCDA(0.15, 0.65), iterations) # Fast!!
+
+# visualize
+using Plots
+est = mean(chain_HMCDA[:θ][:,:,1], dims = 3)
+Plots.scatter(θ, est.df.mean, ylims = [-4,4], xlims = [-4,4], xlabel = "true", ylabel = "estimate")
+```
