@@ -1,0 +1,12 @@
+---
+title: 最適化計算勉強会分担
+author: しぶや
+date: 5th Dec 2019
+---
+
+```julia
+using Random, StatsBase, DataFrames
+Random.seed!(1205)
+odr = StatsBase.sample([:野澤🐶, :加藤🐨, :牧野🐦, :丹🐋], 4, replace = false)
+DataFrame(章 = 3:6, 担当者 = odr)
+```
