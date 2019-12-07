@@ -158,12 +158,19 @@ plot!(0:.01:1, pdf.(Beta(1, 3), 0:.01:1))
 fit(Beta, d)
 ```
 
+2019/12/07
+
+アップデートしました。
+
+juliaプログラミングクックブックの9章を参考にし，非負のパラメタ推定を行う際にlogをとった値を推定することで，関数で計算できないパラメタが探索されることを避けるように変更しました。
+
+
 ```julia
 # optimで最尤推定
 using Optim
-fn(x, par) = -sum(logpdf.(Beta(par[1], par[2]), x))
-opt = optimize(x -> fn(d, x), [1.5, 4.0])# 結構初期値に敏感....
-opt.minimizer
+fn(x, logm, logn) = -sum(logpdf.(Beta(exp(logm), exp(logn)), x))
+opt = optimize(x -> fn(d, x[1], x[2]), [-1.0, 2.0])# 結構初期値に敏感....
+exp.(opt.minimizer)
 ```
 
 ---
