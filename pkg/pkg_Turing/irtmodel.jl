@@ -13,32 +13,34 @@ select!(data, Not(:ID))
 for i in 1:size(data, 2)
     data[!,i] = convert(Array{Int64, 1}, data[:,i])
 end
-data = first(data, 3000)
+data = first(data, 500)
 data = convert(Matrix{Int64}, data)
 
 # data = convert(Matrix{Int64}, data)
 # Describe generative model
 @model irt2pl(data,  N, J) = begin
-   θ = tzeros(Real, N)
-   α = β = tzeros(Real, J)
+   θ = Vector{Float64}(undef, N)
+   α = β = Vector{Float64}(undef, J)
    # assign distributon to each element
-   for i in 1:N
-       θ[i] ~ Normal(0, 1)
-   end
-   for j in 1:J
-       α[j] ~ LogNormal(0, 1)
-       β[j] ~ Normal(0, 2)
-   end
+   θ ~ [Normal(0, 1)]
+   α ~ [LogNormal(0, 1)]
+   β ~ [Normal(0, 2)]
    for i = 1:N
        for j = 1:J
            p = logistic(α[j]*(θ[i]-β[j]))
            data[i,j] ~ Bernoulli(p)
        end
    end
+
+   # for j = 1:J
+   #    p = @. logistic(α[j]*(θ-β[j]))
+   #    data[!,j] ~ [ Bernoulli.(p) ]
+   #    # Right-hand side of a ~ must be subtype of Distribution or a vector of Distributions on line 51.
+   #end
 end
 
 N, J = size(data)
-iterations = 2000
+iterations = 500
 num_chains = 4
 ϵ = 0.05
 τ = 10
@@ -61,6 +63,10 @@ chain_SGHMC = sample(irt2pl(data, N, J), SGHMC(.01, .1), iterations);
 chain_IS = sample(irt2pl(data, N, J), IS(), 5000);
 chain_Gibbs = sample(irt2pl(data, N, J), Gibbs(MH(:α), MH(:β), MH(:θ)), 1000);
 
+# check diveregence
+
+# model fit diagnose
+Turing.waic(chain_HMCDA)
 
 # check estimate results
 using StatsPlots
