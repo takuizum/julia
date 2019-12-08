@@ -43,6 +43,8 @@ plot(y)
 
 ```julia
 using Gadfly, DataFrames
+# 2019/12/07 Weaveの実行関数でエラーが出るためコメントアウト
+# SystemError("opening file ~
 Gadfly.plot(DataFrame(x = 1:100, y = y), x = :x, y = :y , Geom.line)
 ```
 
@@ -146,7 +148,7 @@ log(1);gamma(1);lgamma(1);loggamma(1);logabsgamma(1);# precompile
 using Distributions
 using Random
 Random.seed!(1205)
-d = rand(Beta(1, 3), 10000)
+d = rand(Beta(1, 3), 1000)
 histogram(d, normalize = true)
 plot!(0:.01:1, pdf.(Beta(1, 3), 0:.01:1))
 
@@ -158,9 +160,7 @@ plot!(0:.01:1, pdf.(Beta(1, 3), 0:.01:1))
 fit(Beta, d)
 ```
 
-2019/12/07
-
-アップデートしました。
+**2019/12/07 アップデートしました。**
 
 juliaプログラミングクックブックの9章を参考にし，非負のパラメタ推定を行う際にlogをとった値を推定することで，関数で計算できないパラメタが探索されることを避けるように変更しました。
 

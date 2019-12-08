@@ -8,5 +8,5 @@ weave("pkg/jmd/pkg_Query.jmd", doctype = "pandoc2html", out_path = :doc)
 
 # 2019/12/05 optim study
 weave("jmd/optimStudy.jmd", doctype = "pandoc2html", out_path = :doc)
-
+# advent calender
 weave("jmd/summaryPkg.jmd", doctype = "pandoc2html", out_path = :doc)
