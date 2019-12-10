@@ -19,7 +19,7 @@ Pkg.add("Mamba") # こちらもひつよう？
 ENV["CMDSTAN_HOME"] = "C:\\Users\\bc0089985\\cmdstan\\"
 ENV["CMDSTAN_HOME"] = "/Users/takuizum/cmdstan"
 
-using CmdStan
+using CmdStan#, Stan
 show(ENV)
 # Stan.set_cmdstan_home!("C:\\Users\\bc0089985\\cmdstan\\")
 set_cmdstan_home!("/Users/takuizum/cmdstan")
@@ -52,6 +52,6 @@ rc, sim = CmdStan.stan(stanmodel, dat)
 # An error occurred while compiling the Stan program.
 # Please check your Stan program in variable 'bernoulli' and the contents of C:/Users/bc0089985/Documents/GitHub/julia/tmp/bernoulli.exe_build.log.
 # Note that Stan does not handle blanks in path names.
-
+using StatsPlots
 describe(sim)
-plot(sim) # Good!
+StatsPlots.plot(sim) # Good!
