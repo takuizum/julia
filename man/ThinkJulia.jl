@@ -83,7 +83,7 @@ mysqrt(10, 2) |> typeof
 
 # Exercise 7-2
 using DataFrames
-function testsqareroot(upto) 
+function testsqareroot(upto)
     # define sqrt function
     function mysqrt(x, a, ε = 1e-10)
         # x is initial value.
@@ -194,3 +194,14 @@ end
 inboth("apples", "oranges")
 
 # 9. Case Study
+
+
+# 10. Arrays
+
+# Array of Arraysの形で生成できる。
+["spam", 2.0, 5, [10, 20]]
+
+[1,2,3,4,5,6] ∈ 2
+2 ∈ [1,2,3,4,5,6]
+[1, 2] ∈ [1,2,3,4,5,6] # これはだめ
+map(i -> in(i, [1,2,3,4,5,6]), [1,2,10]) # これならいける。
