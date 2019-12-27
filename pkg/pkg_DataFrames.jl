@@ -38,6 +38,15 @@ push!(df, Dict(:B => "F", :A => 3, :C => 1.0))
 # 余計なKeyがあってもOK
 # ただゆくゆくは廃止される機能なようである。
 
+# push!を使わずに代入できるか調べてみた。
+A = DataFrame(S = 1, T = 2)
+B = DataFrame(S = 3, T = 4)
+C = [A;B]
+D = DataFrame(S = 7, U = 8)
+C[1,:] = D # なんかいっぱいワーニングがでる。
+@show C # データフレームの列名に関係なく，column indexで強制的に割り当てる。
+
+
 # Working with Data Frames
 df = RDatasets.dataset("datasets", "iris")
 first(df, 10)
