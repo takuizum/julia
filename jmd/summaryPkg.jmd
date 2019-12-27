@@ -43,8 +43,6 @@ plot(y)
 
 ```julia
 using Gadfly, DataFrames
-# 2019/12/07 Weaveの実行関数でエラーが出るためコメントアウト
-# SystemError("opening file ~
 Gadfly.plot(DataFrame(x = 1:100, y = y), x = :x, y = :y , Geom.line)
 ```
 
