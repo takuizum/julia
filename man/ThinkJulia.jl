@@ -8,7 +8,7 @@ function countdown(n)
         println("Blastoff!")
     else
         print(n, " ")
-        countdown(n-1)
+        countdown(n - 1)
     end
 end
 
@@ -19,21 +19,21 @@ function ack(m, n)
     if m == 0
         return n + 1
     elseif m > 0 && n == 0
-        return ack(m-1, 1)
+        return ack(m - 1, 1)
     elseif m > 0 && n > 0
-        tmp = ack(m, n-1)
-        return ack(m-1, tmp)
+        tmp = ack(m, n - 1)
+        return ack(m - 1, tmp)
     end
 end
 
 @time ack(3, 4)
 @time ack(3, 6)
-for i in 1:15 # n=15程度でオーバーフロー
+for i = 1:15 # n=15程度でオーバーフロー
     @show i
     @time ack(3, i)
 end
 
-for j in 1:15 # mはかなりちいさな値でもオーバーフローする
+for j = 1:15 # mはかなりちいさな値でもオーバーフローする
     @show j
     @time ack(j, 3)
 end
@@ -45,7 +45,7 @@ ispower(a, b)
 Calculate a power, b, of a.
 """
 function ispower(a::Int64, b::Int64)
-    dvd = a/b
+    dvd = a / b
     if (dvd % b) == 0
         print(b, " is a power of ", a, " and a power is ", convert(Int64, dvd))
         return true
@@ -70,8 +70,8 @@ function mysqrt(x, a, ε = 1e-10)
     # a is a value to figure out its square root.
     while true
         # println(x)
-        y = (x + a/x) / 2
-        if abs(y-x) < ε
+        y = (x + a / x) / 2
+        if abs(y - x) < ε
             return y
             break
         end
@@ -89,8 +89,8 @@ function testsqareroot(upto)
         # x is initial value.
         # a is a value to figure out its square root.
         while true
-            y = (x + a/x) / 2
-            if abs(y-x) < ε
+            y = (x + a / x) / 2
+            if abs(y - x) < ε
                 return y
                 break
             end
@@ -100,12 +100,12 @@ function testsqareroot(upto)
     # initialize
     a = [1.0:1.0:upto;]
     mysqrt_vec = zeros(length(a))
-    sqrt_vec  = zeros(length(a))
+    sqrt_vec = zeros(length(a))
     diff_vec = zeros(length(a))
     init = upto
     @. mysqrt_vec = mysqrt(init, a)
-    @. sqrt_vec   = sqrt(a)
-    @. diff_vec   = mysqrt_vec - sqrt_vec
+    @. sqrt_vec = sqrt(a)
+    @. diff_vec = mysqrt_vec - sqrt_vec
     res = DataFrame(a = a, mysqrt = mysqrt_vec, sqrt = sqrt_vec, diff = diff_vec)
     @show res
     return res
@@ -118,11 +118,11 @@ Meta.parse("sqrt(π)")
 
 function evalloop(eval_expr)
     flag = true
-    while(flag)
+    while (flag)
         Meta.parse(eval_expr)
         print("Have you be satisfied with this iteration? If so, enter 'done'.")
         txt = readline()
-        if(txt == "done")
+        if (txt == "done")
             flag = false
         end
     end
@@ -166,9 +166,6 @@ end
 str = "Julius Caesar";
 str[1:6]
 str[:]
-
-# String Interpolation
-# String内でJuliaオブジェクトを参照する。
 "1 + 2 = $(1 + 2)"
 
 # String Library
@@ -202,16 +199,16 @@ inboth("apples", "oranges")
 ["spam", 2.0, 5, [10, 20]]
 
 # 配列のマッチ `∈`
-[1,2,3,4,5,6] ∈ 2
-2 ∈ [1,2,3,4,5,6]
-[1, 2] ∈ [1,2,3,4,5,6] # これはだめ
-map(i -> in(i, [1,2,3,4,5,6]), [1,2,10]) # これならいける。
+[1, 2, 3, 4, 5, 6] ∈ 2
+2 ∈ [1, 2, 3, 4, 5, 6]
+[1, 2] ∈ [1, 2, 3, 4, 5, 6] # これはだめ
+map(i -> in(i, [1, 2, 3, 4, 5, 6]), [1, 2, 10]) # これならいける。
 
 # `eachindex`で配列の要素の位置をすべて取得できる。
 random = randn(10)
 eachindex(random)
 for i in eachindex(random)
-    random[i] = 2random[i]
+    random[i] = 2 * random[i]
 end
 Int.(eachindex(random))
 
