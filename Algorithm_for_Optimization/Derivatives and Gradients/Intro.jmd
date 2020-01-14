@@ -41,12 +41,31 @@ x += 1 # Updating version
 10 % 3 # remainder
 [1 2; 3 4] \ [1; 2] # inverse (matrix) divide
 2 ^ 3 # power
+"abc " ^ 3
 
+# times
 [1 2; 3 4] * [1; 2]
+2 * 10
+"abcd" * "efgh"
 ```
 
 ### ベクトル演算
 
-```julia
+ベクトルに対して繰り返し操作する場合はdot syntaxを利用する。
 
+```julia
+x = range(1, 10000; step = 2)
+@time sum(x)
+function mysum(x)
+    y = zero(eltype(x))
+    for v in x
+        y += v
+    end
+    return y
+end
+@time mysum(x) # ベクトル演算しても，loopで計算してもほぼ実行速度が変わらない！
+
+x = [1:2:10000;] # Array
+x .+ 2
+2x # times はベクトルに対しても定義されているので，dotなしで使える。
 ```
