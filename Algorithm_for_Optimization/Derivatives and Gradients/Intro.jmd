@@ -1,0 +1,52 @@
+---
+title: Julia入門
+author: Takumi SHIBUYA
+date: 14th Jan 2020
+---
+
+# Juliaにおける型
+
+Rでは明示的でなかった（と個人的に思う）数値型が，Juliaでは結構重要になってくる。
+
+### 論理型(Boolen)
+
+```julia
+true
+false
+!true # not
+
+true && false # and
+true || false # or
+```
+
+### 数値型(Numebers
+
+8ビットから64ビットまで任意に指定できる。なにも指定しなければ，64ビットになる。
+```julia
+1 == 1.0
+typeof(1)
+typeof(1.0)
+```
+
+### 演算子(Numerical Operator)
+
+行列に対する演算はデフォルトで実装されているので，特にライブラリを読み込む必要はない。
+
+```julia
+1 + 1
+x = 1
+x += 1 # Updating version
+10 / 3 # divide
+10 ÷ 3 # integer divide
+10 % 3 # remainder
+[1 2; 3 4] \ [1; 2] # inverse (matrix) divide
+2 ^ 3 # power
+
+[1 2; 3 4] * [1; 2]
+```
+
+### ベクトル演算
+
+```julia
+
+```
