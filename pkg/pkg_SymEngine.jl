@@ -1,0 +1,3 @@
+using SymEngine
+
+f(x) = 

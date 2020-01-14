@@ -1,15 +1,15 @@
 # module
 module A
-    a = 1
+a = 1
 end;
 
 module B
-    module C
-        c = 2
-    end
-    b = 2C.c
-    import ..A　#他のモジュールから参照する
-    d = A.a
+module C
+c = 2
+end
+b = 2 * C.c
+import ..A#他のモジュールから参照する
+d = A.a
 end;
 # "module name" . "a variable in module"
 A.a
@@ -40,7 +40,7 @@ end
 Fs = Vector{Any}(undef, 3)
 i = 1 # initialize
 while i <= 3
-    Fs[i] = ()->i
+    Fs[i] = () -> i
     global i += 1
 end
 Fs[1] # この指定にはλがはいってる。なぜ？
@@ -59,7 +59,7 @@ Fs = Vector{Any}(undef, 3)
 i = 1 # initialize
 while i <= 3
     let i = i
-        Fs[i] = ()->i
+        Fs[i] = () -> i
     end
     global i += 1
 end
@@ -67,7 +67,8 @@ Fs[1] # この指定にはλがはいってる。なぜ？
 Fs[2]()
 # forloop comprehension
 # iはいずこに？
-for i = 1:10 end # iteration variableはいつも新しく作られるので，localやglobalには残らない
+for i = 1:10 # iteration variableはいつも新しく作られるので，localやglobalには残らない
+end # iteration variableはいつも新しく作られるので，localやglobalには残らない
 i
 function f()
     i = 0
@@ -76,7 +77,8 @@ function f()
     return i
 end
 f()
-for outer i = 1:10 end  # これはダメ
+for outer i = 1:10  # これはダメ
+end  # これはダメ
 
 # constants
 # 基本的にC++で使ったのと一緒

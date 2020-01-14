@@ -9,9 +9,9 @@ x = 1
 x += 3 # updating operators
 
 # dot operators
-[1,2,3] # column vector
-[1,2,3]
-[1, 2, 3] .^3 # . operators = 要素ごとの演算
+[1, 2, 3] # column vector
+[1, 2, 3]
+[1, 2, 3] .^ 3 # . operators = 要素ごとの演算
 #クロネッカー積 = kron(,) or ⊗
 
 # Numeric comparison
@@ -51,13 +51,13 @@ abs(-5)
 # complex number
 1 + 2im
 # rational values
-6//9
-2//4 + 1//6
-2//3 == 9//27
-3//5 + 1
-3//5 + 2 # 左側にしか加算されない。
+6 // 9
+2 // 4 + 1 // 6
+2 // 3 == 9 // 27
+3 // 5 + 1
+3 // 5 + 2 # 左側にしか加算されない。
 
 
 # julia pipe operator
-"abc" |> x->repeat(x,5) |> x->string(x,"5times") # 複数の引数があるときは明示的に指定
+"abc" |> x -> repeat(x, 5) |> x -> string(x, "5times") # 複数の引数があるときは明示的に指定
 [1:5;] |> sum

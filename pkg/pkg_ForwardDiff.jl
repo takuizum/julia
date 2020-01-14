@@ -14,3 +14,7 @@ end
 
 gicc = θ -> ForwardDiff.gradient(icc2pl(θ, 1.0, 1.0))
 gicc(θ)
+
+# See dual behavior
+using ForwardDiff
+ 

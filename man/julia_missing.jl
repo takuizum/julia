@@ -20,8 +20,8 @@ ismissing(missing) # true
 isequal(missing, missing)
 missing === 1
 # isless
-isless(1,2)
-isless(2,1)
+isless(1, 2)
+isless(2, 1)
 isless(missing, 1)
 isless(1, missing)
 isless(missing, missing)
