@@ -57,7 +57,7 @@ x += 1 # Updating version
 x = range(1, 10000; step = 2)
 @time sum(x)
 function mysum(x)
-    y = zero(eltype(x))
+    y = zero(eltype(x)) # ここが計算速度のミソ
     for v in x
         y += v
     end
@@ -68,4 +68,13 @@ end
 x = [1:2:10000;] # Array
 x .+ 2
 2x # times はベクトルに対しても定義されているので，dotなしで使える。
+```
+
+### 型推論(Type Inference)
+
+```julia
+function foo()
+    x::Int64 = 1
+    println(x)
+end
 ```
