@@ -21,9 +21,9 @@ f2 = 1 / (1+exp(-a*(θ-b)))
 diff(f2, a)
 
 # Numerical Differentiation (Single variables)
-diff_forward(f, x; h=sqrt(eps(Float64))) = (f(x+h) - f(x))/h
-diff_central(f, x; h=cbrt(eps(Float64))) = (f(x+h/2) - f(x-h/2))/h
-diff_backward(f, x; h=sqrt(eps(Float64))) = (f(x) - f(x-h))/h
+diff_forward(f, x; h=√(eps(Float64))) = (f(x+h) - f(x))/h
+diff_central(f, x; h=∛(eps(Float64))) = (f(x+h/2) - f(x-h/2))/h
+diff_backward(f, x; h=√(eps(Float64))) = (f(x) - f(x-h))/h
 
 using Plots
 plot(sin)
@@ -52,8 +52,8 @@ end
 
 StepSize = [eval(Meta.parse("10^-$x")) for x in 18:-0.1:0]
 comp = CompDiffMethod(StepSize)
-plot(StepSize, comp, xscale = :log10, yscale = :log10, label = ["Forward" "backward" "Central" "Complex"])
-
+compplot = plot(StepSize, comp, xscale = :log10, yscale = :log10, label = ["Forward" "backward" "Central" "Complex"], legend = :bottomright)
+savefig(compplot, "DifferentialMethodComparison.png")
 # Diff image plot
 
 derivplot = let

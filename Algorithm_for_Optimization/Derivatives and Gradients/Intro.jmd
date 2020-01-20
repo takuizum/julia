@@ -4,31 +4,8 @@ author: Takumi SHIBUYA
 date: 14th Jan 2020
 ---
 
-# Juliaにおける型
 
-Rでは明示的でなかった（と個人的に思う）数値型が，Juliaでは結構重要になってくる。
-
-### 論理型(Boolen)
-
-```julia
-true
-false
-!true # not
-
-true && false # and
-true || false # or
-```
-
-### 数値型(Numebers
-
-8ビットから64ビットまで任意に指定できる。なにも指定しなければ，64ビットになる。
-```julia
-1 == 1.0
-typeof(1)
-typeof(1.0)
-```
-
-### 演算子(Numerical Operator)
+# 演算子(Numerical Operator)
 
 行列に対する演算はデフォルトで実装されているので，特にライブラリを読み込む必要はない。
 
@@ -70,7 +47,10 @@ x .+ 2
 2x # times はベクトルに対しても定義されているので，dotなしで使える。
 ```
 
-### 型推論(Type Inference)
+# 型(Types)
+
+- 静的型付け 関数が実行される前に（コンパイル時に），変数の型は宣言されている必要がある
+- 動的型付け　関数が実行されるまで，変数の型がわからず，仮に関数の挙動に合わない型が投げられた場合，強制的に変換されるか，エラーになる，
 
 ```julia
 function foo()
@@ -79,28 +59,141 @@ function foo()
 end
 ```
 
+## 抽象型
+
+すべての抽象型は上位の型（super type)を持つことができる。
+
+```julia
+abstract type Number end
+abstract type Real <: Number end
+abstract type AbstractFloat <: Real end
+```
+
+## 原始型
+
+データのビットで構成される具象(concrete)型
+
+```julia
+primitive type Float64 <: AbstractFloat 64 end
+```
+
+### 論理型(Boolen)
+
+```julia
+true
+false
+!true # not
+
+true && false # and
+true || false # or
+```
+
+### 数値型(Numebers
+
+8ビットから64ビットまで任意に指定できる。なにも指定しなければ，64ビットになる。
+
+整数型の`Int`と浮動小数点型の`Float`がある。
+
+```julia
+1 == 1.0
+typeof(1)
+typeof(1.0)
+```
+
+## 複合型
+
+複数の要素を持つ型。別名，構造体(struct)とかオブジェクト(object)などと呼ばれる。
+
 ### 構造体(Construct)
 
 juliaでオブジェクト≈インスタンスを作成するための関数が`struct`である。
 
 ```julia
+# Constructor
 struct hoge
-    huga
+    huga # 配列でも，関数でも，好きな型をとれる。
     piyo
 end
+```
 
+定義するときは関数のように
+
+```julia
+hoge(1, [1,2])
+```
+
+呼び出す際は
+```julia
+hoge.huga
+```
+
+### Parametric Constructor
+```julia
 struct phoge{T<:Real}
     piyp::T
     huga::T
 end
+phoge(1, 1)
+phoge(1., 1.)
+phoge(1, 3.0) # Error (2つの値の型が異なるため。)
+```
+
+### Mutable Constructor
+```julia
+mutable struct mhoge
+    piyo
+    huga
+end
+hoge = mhoge(1, 2)
+hoge.piyo = 2
+hoge
 ```
 
 ### 多重ディスパッチ
 
-メソッド(Methods) : 受け取ったオブジェクトによって定義される関数の挙動。
-総称関数(generic function) : 複数のメソッドが定義できる関数。受け取る引数によって，関数の挙動が変わる。
-ディスパッチ(dispatch) : 関数が実行されたときに，どのメソッドが処理されるかどうかを選択すること。関数の複数の引数を参照してディスパッチすることを多重ディスパッチと呼ぶ。juliaではすべての関数で多重ディスパッチが実行され，RではS4クラスによってサポートされる。
+- メソッド(Methods) : 受け取ったオブジェクトによって定義される関数の挙動。
+- 総称関数(generic function) : 複数のメソッドが定義できる関数。受け取る引数によって，関数の挙動が変わる。
+- ディスパッチ(dispatch) : 関数が実行されたときに，どのメソッドが処理されるかどうかを選択すること。
+
+関数の複数の引数を参照してディスパッチすることを多重ディスパッチと呼ぶ。
+juliaではすべての関数で多重ディスパッチが実行され，RではS4クラスによってサポートされる。
 
 例えば，Rの`coef`や`anova`は様々なパッケージによってメソッドが定義されており，引数に渡すオブジェクトの型(class)ごとに異なる挙動をする。
 
-juliaではすべての関数が総称関数であり，関数は与えられた引数から適切なメソッドを参照する。juliaでメソッドを定義するためには，通常の関数を書くときに，引数の型を明示的に宣言すればよい。
+juliaではすべての関数が総称関数であり，関数は与えられた引数から適切なメソッドを参照する。
+juliaでメソッドを定義するためには，通常の関数を書くときに，引数の型を明示的に宣言すればよい。
+
+```julia
+f(x::Float64) = println("This is Float64!")
+f(x::Int64) = println("This is Int64!")
+
+f(1.0)
+f(1)
+```
+
+
+# Julia Performance Tipes
+
+https://docs.julialang.org/en/v1/manual/performance-tips/
+
+1. グローバル変数は避ける。
+
+2. `@time`や`Profirer`でマメにメモリ消費などを確認する。
+
+3. 抽象型よりも具象型を使うようにする。
+
+4. 複数の処理は，小さな関数のまとまりとして書く。
+
+5. "type-stable"なコードを書く。　　
+
+6. 多重ディスパッチの乱用に注意。
+
+https://groups.google.com/forum/#!msg/julia-users/jUMu9A3QKQQ/qjgVWr7vAwAJ
+
+7. 配列のアクセスはカラムメジャー（Rと同じ，numpyはロウメジャー）
+
+8. 配列を作りすぎない（事前に配列を初期化しておき，そこにアクセスする）
+
+9. ベクトル演算にはdot syntaxを使う。
+
+10. `@view` マクロで配列のスライスを使う。
