@@ -19,7 +19,7 @@ Pkg.add("Mamba") # こちらもひつよう？
 ENV["CMDSTAN_HOME"] = "C:\\Users\\bc0089985\\cmdstan\\"
 ENV["CMDSTAN_HOME"] = "/Users/takuizum/cmdstan"
 
-using CmdStan#, Stan
+using CmdStan#, Sta
 show(ENV)
 # Stan.set_cmdstan_home!("C:\\Users\\bc0089985\\cmdstan\\")
 set_cmdstan_home!("/Users/takuizum/cmdstan")
@@ -48,10 +48,18 @@ dat = [Dict("N" => 10, "y" => [0, 1, 0, 1, 0, 0, 0, 0, 0, 1])]
 
 rc, sim = CmdStan.stan(stanmodel, dat)
 
+using StatsPlots
+describe(sim)
+StatsPlots.plot(sim) # Good!
+
 # Error Message is as below -------------------------------------
 # An error occurred while compiling the Stan program.
 # Please check your Stan program in variable 'bernoulli' and the contents of C:/Users/bc0089985/Documents/GitHub/julia/tmp/bernoulli.exe_build.log.
 # Note that Stan does not handle blanks in path names.
-using StatsPlots
-describe(sim)
-StatsPlots.plot(sim) # Good!
+
+# 2020/02/05
+# Mac環境下似て，Xcodeのバージョンを上げると，stan()実行時にエラーが起きる。
+# cmdstanディレクトリに行き，rebuildすることで解消。
+
+# 2020/02/06
+# Windows環境下でエラー。少なくともrstanで動かない。どうやらインストールされているバージョンが依存関係のあるパッケージのバージョンと食い違っていることが原因のようだ。
