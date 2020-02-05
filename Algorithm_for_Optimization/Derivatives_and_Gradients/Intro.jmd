@@ -1,7 +1,7 @@
 ---
-title: Julia入門
+title: 入門julia
 author: Takumi SHIBUYA
-date: 14th Jan 2020
+date: 23th Jan 2020
 ---
 
 
@@ -20,19 +20,33 @@ x += 1 # Updating version
 2 ^ 3 # power
 "abc " ^ 3
 
+```
+
+掛け算はRとはちょっとちがう。
+
+```julia
 # times
 [1 2; 3 4] * [1; 2]
+```
+
+```julia
 2 * 10
+```
+
+```julia
 "abcd" * "efgh"
 ```
 
 ### ベクトル演算
 
-ベクトルに対して繰り返し操作する場合はdot syntaxを利用する。
 
 ```julia
 x = range(1, 10000; step = 2)
+sum(x); # compile
 @time sum(x)
+```
+
+```julia
 function mysum(x)
     y = zero(eltype(x)) # ここが計算速度のミソ
     for v in x
@@ -40,13 +54,20 @@ function mysum(x)
     end
     return y
 end
+mysum(x)
 @time mysum(x) # ベクトル演算しても，loopで計算してもほぼ実行速度が変わらない！
-
-x = [1:2:10000;] # Array
-x .+ 2
-2x # times はベクトルに対しても定義されているので，dotなしで使える。
 ```
 
+ベクトルに対して繰り返し操作する場合はdot syntaxを利用すると効率的。
+
+```julia
+x = [1:2:10000;] # Array
+x .+ 2
+```
+
+```julia
+2x # times はベクトルに対しても定義されているので，dotなしで使える。
+```
 # 型(Types)
 
 - 静的型付け 関数が実行される前に（コンパイル時に），変数の型は宣言されている必要がある
@@ -54,7 +75,7 @@ x .+ 2
 
 ```julia
 function foo()
-    x::Int64 = 1
+    x::Int64 = 1 # こんな感じで定義する。
     println(x)
 end
 ```
@@ -80,12 +101,12 @@ primitive type Float64 <: AbstractFloat 64 end
 ### 論理型(Boolen)
 
 ```julia
-true
-false
-!true # not
+true;
+false;
+!true; # not
 
-true && false # and
-true || false # or
+true && false; # and
+true || false; # or
 ```
 
 ### 数値型(Numebers
@@ -96,7 +117,11 @@ true || false # or
 
 ```julia
 1 == 1.0
+```
+```julia
 typeof(1)
+```
+```julia
 typeof(1.0)
 ```
 
@@ -111,7 +136,7 @@ juliaでオブジェクト≈インスタンスを作成するための関数が
 ```julia
 # Constructor
 struct hoge
-    huga # 配列でも，関数でも，好きな型をとれる。
+    huga
     piyo
 end
 ```
@@ -119,12 +144,12 @@ end
 定義するときは関数のように
 
 ```julia
-hoge(1, [1,2])
+hoge1 = hoge(1, [1,2])
 ```
 
 呼び出す際は
 ```julia
-hoge.huga
+hoge1.huga
 ```
 
 ### Parametric Constructor
@@ -132,21 +157,30 @@ hoge.huga
 struct phoge{T<:Real}
     piyp::T
     huga::T
-end
-phoge(1, 1)
-phoge(1., 1.)
-phoge(1, 3.0) # Error (2つの値の型が異なるため。)
+end;
 ```
-
+```julia
+phoge1 = phoge(1, 1)
+```
+```julia
+phoge2 = phoge(1., 1.)
+```
+```julia
+phoge3 = phoge(1, 3.0) # Error (2つの値の型が異なるため。)
+```
 ### Mutable Constructor
 ```julia
 mutable struct mhoge
     piyo
     huga
 end
-hoge = mhoge(1, 2)
-hoge.piyo = 2
-hoge
+hoge2 = mhoge(1, 2)
+hoge2
+```
+
+```julia
+hoge2.piyo = 2
+hoge2
 ```
 
 ### 多重ディスパッチ
@@ -166,9 +200,14 @@ juliaでメソッドを定義するためには，通常の関数を書くとき
 ```julia
 f(x::Float64) = println("This is Float64!")
 f(x::Int64) = println("This is Int64!")
+```
 
-f(1.0)
+```julia
 f(1)
+```
+
+```julia
+f(1.0)
 ```
 
 
