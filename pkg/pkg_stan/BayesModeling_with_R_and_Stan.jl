@@ -23,9 +23,9 @@ size(matrix_2)
 #######################################
 
 # read sample data
-using TableReader, HTTP, DataFrames, CmdStan, Stan
+using HTTP, CSV, DataFrames, CmdStan, Stan
 res = HTTP.get("https://raw.githubusercontent.com/logics-of-blue/book-r-stan-bayesian-model-intro/master/book-data/2-4-1-beer-sales-1.csv")
-file_beer_sales_1 = readcsv(IOBuffer(res.body))
+file_beer_sales_1 = CSV.read(IOBuffer(res.body))
 data_list = [Dict("sales" => vec(convert(Matrix, file_beer_sales_1)), "N" => size(file_beer_sales_1, 1))]
 # read code
 Code = HTTP.get("https://raw.githubusercontent.com/logics-of-blue/book-r-stan-bayesian-model-intro/master/book-data/2-4-1-calc-mean-variance.stan")
@@ -72,7 +72,7 @@ mcmc_sample[:,8,:]
 using TableReader, HTTP, DataFrames
 
 res = HTTP.get("https://raw.githubusercontent.com/logics-of-blue/book-r-stan-bayesian-model-intro/master/book-data/2-5-1-animal-num.csv")
-animal_num = res.body |> IOBuffer |> readcsv
+animal_num = res.body |> IOBuffer |> CSV.read
 
 Code1 = HTTP.get("https://raw.githubusercontent.com/logics-of-blue/book-r-stan-bayesian-model-intro/master/book-data/2-5-1-normal-dist.stan")
 code_normal = Code1.body |> IOBuffer |> x->readlines(x, keep = true) |> join

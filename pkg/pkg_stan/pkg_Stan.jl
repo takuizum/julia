@@ -1,7 +1,7 @@
 using Pkg
 Pkg.add(["Stan", "StanSample"]) # take several minutes.
 
-using Stan, StanSample
+using StanSample, Stan
 # check env
  # ENV["JULIA_CMDSTAN_HOME"]
 
