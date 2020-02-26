@@ -3,10 +3,10 @@
 # 2019/11/06
 # add Zygote#master で引っかかってくるPkgをすべてrmすればZygoteのprecompileは実行できた。
 # 最新版のZygoteではbuildエラーが起こるようなので，masterからとってくること。
-]add Turing#master
-# masterがら引っ張ってきたいが，依存するPkgの要求するバーションを満たしていないので，却下される模様。
-]add ZygoteRules#master
-]add Zygote#master
+# add Turing#master
+# # masterがら引っ張ってきたいが，依存するPkgの要求するバーションを満たしていないので，却下される模様。
+# ]add ZygoteRules#master
+# ]add Zygote#master
 
 using Turing, StatsPlots, Random
 

@@ -7,6 +7,7 @@ R"""
 library(irtfun2)
 data <- sim_data_2
 """
+data = Any; #  dummy for linting
 @rget data
 # @linq data |> select!(2:31)
 select!(data, Not(:ID))
