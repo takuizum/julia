@@ -9,10 +9,25 @@ struct GradedLogistic{T1} <: DiscreteUnivariateDistribution
    θ::T1
 end
 
+function Distributions.rand(s::GradedLogistic)
+    K = length(s.b)+1
+	b = [-Inf; s.b; Inf]
+	p = zeros(K)
+	p[1] = logistic(s.a*(s.θ - b[1])) - logistic(s.a*(s.θ - b[2]))
+	for k in 2:K
+		p[k] = p[k-1] + logistic(s.a*(s.θ - b[k])) - logistic(s.a*(s.θ - b[k+1]))
+	end
+	sum(p .< rand()) + 1
+end
+
 function Distributions.logpdf(d::GradedLogistic, k::Int)
-    K = length(d.b)+1
-    b = [-Inf; d.b; Inf]
-    log(logistic(d.a*(d.θ - d.b[k])) - logistic(d.a*(d.θ - d.b[k+1])))
+	b = [-Inf; d.b; Inf]
+    log(logistic(d.a*(d.θ - b[k])) - logistic(d.a*(d.θ - b[k+1])))
+end
+
+function Distributions.pdf(d::GradedLogistic, k::Int)
+	b = [-Inf; d.b; Inf]
+    logistic(d.a*(d.θ - b[k])) - logistic(d.a*(d.θ - b[k+1]))
 end
 
 
@@ -21,20 +36,35 @@ end
     θ = Vector(undef, N)
 	α = Vector(undef, J)
 	β = Vector{Vector}(undef, J)
+	β_diff = Vector{Vector}(undef, J)
 	data2 = zeros(Int64, N, J)
 	for j in 1:J
 		# Convert raw data
 		cat = sort(unique(skipmissing(data[:,j])))
 		for (k, v) in enumerate(cat)
-			println("Item: ", j, " Category: ", k, " Observed: ", v)
+			# println("Item: ", j, " Observed: ", v, " is converted to Category: ", k)
 			data2[data[:,j] .==  v, j] .= k
 		end
+		α[j] ~ LogNormal(0, 2)
 		# Assign normal prior with ordered constraints
+		β[j] = Vector(undef, length(cat) - 1)
+		β_diff[j] = Vector(undef, length(cat) - 2)
+		for k in 1:length(cat) - 1
+			if k == 1
+				β[j][k] ~ Normal(-3, 1)
+			else
+				β_diff[j][k-1] ~ Normal(0, 1)
+				β[j][k] = β[j][k - 1] + exp(β_diff[j][k-1])
+			end
+		end
 	end
-   	# assign distributon to each element
-   	θ .~ Normal(0, 1)
-	α .~ LogNormal(0, 2)
-	println("Starts sampling here")   
+	   # assign distributon to each element
+	for i in 1:N
+		θ[i] ~ Normal(0, 1)
+	end
+	
+	@show β
+	# println("Starts sampling here")   
    	for i = 1:N
 		for j = 1:J
 			data2[i,j] ~ GradedLogistic(α[j], β[j], θ[i])
