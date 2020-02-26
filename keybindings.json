@@ -1,0 +1,117 @@
+// Place your key bindings in this file to override the defaultsauto[]
+[
+    {
+        "key": "cmd+enter",
+        "command": "language-julia.executeJuliaCodeInREPL",
+        "when": "editorTextFocus && editorLangId == 'julia'"
+    },
+    {
+        "key": "ctrl+enter",
+        "command": "-language-julia.executeJuliaCodeInREPL",
+        "when": "editorTextFocus && editorLangId == 'julia'"
+    },
+    {
+        "key": "cmd+enter",
+        "command": "language-julia.executeJuliaCodeInREPL",
+        "when": "editorTextFocus && editorLangId == 'juliamarkdown'"
+    },
+    {
+        "key": "ctrl+enter",
+        "command": "-language-julia.executeJuliaCodeInREPL",
+        "when": "editorTextFocus && editorLangId == 'juliamarkdown'"
+    },
+    {
+        "key": "cmd+enter",
+        "command": "python.datascience.runcurrentcell",
+        "when": "editorTextFocus && python.datascience.featureenabled && python.datascience.hascodecells && !editorHasSelection"
+    },
+    {
+        "key": "ctrl+enter",
+        "command": "-python.datascience.runcurrentcell",
+        "when": "editorTextFocus && python.datascience.featureenabled && python.datascience.hascodecells && !editorHasSelection"
+    },
+    {
+        "key": "alt+-",
+        "command": "type",
+        "when": "editorLangId == r || editorLangId == rmd && editorTextFocus",
+        "args": {
+            "text": " <- "
+        }
+    },
+    {
+        "key": "cmd+shift+m",
+        "command": "type",
+        "when": "editorLangId == r || editorLangId == rmd && editorTextFocus",
+        "args": {
+            "text": " %>% "
+        }
+    },
+    {
+        "key": "ctrl+shift+m",
+        "command": "type",
+        "when": "editorLangId == r || editorLangId == rmd && editorTextFocus",
+        "args": {
+            "text": " %>% "
+        }
+    },
+    {
+        "key": "cmd+shift+m",
+        "command": "type",
+        "when": "editorLangId == jl && editorTextFocus",
+        "args": {
+            "text": " |> "
+        }
+    },
+    {
+        "key": "ctrl+shift+m",
+        "command": "type",
+        "when": "editorLangId == jl && editorTextFocus",
+        "args": {
+            "text": " |> "
+        }
+    },
+    {
+        "key": "ctrl+shift+m",
+        "command": "-workbench.actions.view.problems"
+    }, 
+    {
+        "key": "cmd+shift+i",
+        "command": "workbench.action.terminal.focusNext"
+    },
+    {
+        "key": "ctrl+shift+i",
+        "command": "workbench.action.terminal.focusNext"
+    },
+    // {
+    //     "key": "cmd+shift+",
+    //     "command": "workbench.action.terminal.focusPrevious"
+    // }, 
+    {
+        "key": "cmd+shift+l",
+        "command": "workbench.action.terminal.focus"
+    },
+    {
+        "key": "ctrl+shift+l",
+        "command": "workbench.action.terminal.focus"
+    },
+    {
+        "key": "cmd+shift+j",
+        "command": "workbench.action.focusActiveEditorGroup",
+        "when": "terminalFocus"
+    },
+    {
+        "key": "ctrl+shift+j",
+        "command": "workbench.action.focusActiveEditorGroup",
+        "when": "terminalFocus"
+    },
+    {
+        "key": "cmd+shift+j",
+        "command": "workbench.action.previousEditor",
+        "when": "editorFocus"
+    },
+    {
+        "key": "ctrl+shift+j",
+        "command": "workbench.action.previousEditor",
+        "when": "editorFocus"
+    }
+]
