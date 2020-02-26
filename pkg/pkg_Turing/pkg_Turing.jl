@@ -8,6 +8,10 @@
 # ]add ZygoteRules#master
 # ]add Zygote#master
 
+# 2020/02/26
+# GitHubの更新頻度が結構高いようなので，こちらからinstallする。
+# ]add https://github.com/TuringLang/Turing.jl
+
 using Turing, StatsPlots, Random
 
 # Set the true probability of heads in a coin. # ベルヌーイ試行の母数を設定
