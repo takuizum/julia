@@ -441,9 +441,9 @@ uuid = "b3c3ace0-ae52-54e7-9d0b-2c1406fd6b9d"
 version = "0.3.2"
 
 [[RecipesBase]]
-git-tree-sha1 = "b4ed4a7f988ea2340017916f7c9e5d7560b52cae"
+git-tree-sha1 = "7bdce29bc9b2f5660a6e5e64d64d91ec941f6aa2"
 uuid = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
-version = "0.8.0"
+version = "0.7.0"
 
 [[Reexport]]
 deps = ["Pkg"]

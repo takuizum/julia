@@ -36,38 +36,29 @@ end
     θ = Vector(undef, N)
 	α = Vector(undef, J)
 	β = Vector{Vector}(undef, J)
-	β_diff = Vector{Vector}(undef, J)
-	data2 = zeros(Int64, N, J)
 	for j in 1:J
-		# Convert raw data
 		cat = sort(unique(skipmissing(data[:,j])))
-		for (k, v) in enumerate(cat)
-			# println("Item: ", j, " Observed: ", v, " is converted to Category: ", k)
-			data2[data[:,j] .==  v, j] .= k
-		end
+		K = length(cat)
 		α[j] ~ LogNormal(0, 2)
 		# Assign normal prior with ordered constraints
-		β[j] = Vector(undef, length(cat) - 1)
-		β_diff[j] = Vector(undef, length(cat) - 2)
-		for k in 1:length(cat) - 1
+		β[j] = [range(-3, stop = 3, length = K-1);]
+		for k in 1:K-1
 			if k == 1
-				β[j][k] ~ Normal(-3, 1)
-			else
-				β_diff[j][k-1] ~ Normal(0, 1)
-				β[j][k] = β[j][k - 1] + exp(β_diff[j][k-1])
+				β[j][k] ~ truncated(Normal(0, 2), -Inf, β[j][k])
+			elseif 1 < k < K-1
+				β[j][k] ~ truncated(Normal(0, 2), β[j][k], β[j][k+1])
+			else # if k == K-1
+				β[j][k] ~ truncated(Normal(0, 2), β[j][k], Inf)
 			end
 		end
 	end
-	   # assign distributon to each element
+	# assign distributon to each element
 	for i in 1:N
 		θ[i] ~ Normal(0, 1)
 	end
-	
-	@show β
-	# println("Starts sampling here")   
-   	for i = 1:N
-		for j = 1:J
-			data2[i,j] ~ GradedLogistic(α[j], β[j], θ[i])
+   	for i in 1:N
+		for j in 1:J
+			data[i,j] ~ GradedLogistic(α[j], β[j], θ[i])
 	    end
     end
 end
@@ -79,4 +70,20 @@ data <- mirt::simdata(a,d,2000, itemtype = rep('graded', 10)) - 1
 """
 @rget data
 
+function convert2graded(data)
+	N, J = size(data)
+	data2 = zeros(Int64, N, J)
+	for j in 1:J
+		cat = sort(unique(skipmissing(data[:,j])))
+		for (k, v) in enumerate(cat)
+			println("Item: ", j, " Observed: ", v, " is converted to Category: ", k)
+			data2[data[:,j] .==  v, j] .= k
+		end
+	end
+	return data2
+end
+data = convert2graded(data)
+
 chain_NUTS = sample(graded(data), NUTS(0.65), 500);
+chain_IS = sample(graded(data), IS(), 5000);
+chain_IS
