@@ -3,10 +3,17 @@ using DataFrames, StatsFuns, Distributions
 
 # Define logistic model under GRM
 
-struct GradedLogistic{T1} <: DiscreteUnivariateDistribution
+mutable struct GradedLogistic{T1} <: DiscreteUnivariateDistribution
    a::T1
    b::Vector{T1}
    θ::T1
+   function GradedLogistic(a, b, θ)
+	   d = new{typeof(θ)}()
+	   d.a = a
+	   d.b = b
+	   d.θ = θ
+	   return d
+   end
 end
 
 function Distributions.rand(s::GradedLogistic)
@@ -30,23 +37,23 @@ function Distributions.pdf(d::GradedLogistic, k::Int)
     logistic(d.a*(d.θ - b[k])) - logistic(d.a*(d.θ - b[k+1]))
 end
 
-
 @model graded(data) = begin
 	N, J = size(data)
-    θ = Vector(undef, N)
-	α = Vector(undef, J)
+    θ = Vector{Real}(undef, N)
+	α = Vector{Real}(undef, J)
 	β = Vector{Vector}(undef, J)
 	for j in 1:J
 		cat = sort(unique(skipmissing(data[:,j])))
 		K = length(cat)
 		α[j] ~ LogNormal(0, 2)
 		# Assign normal prior with ordered constraints
-		β[j] = [range(-3, stop = 3, length = K-1);]
+		β[j] = Vector{Real}(undef, K-1)
+		β[j][1:K-1] = [range(-3, stop = 3, length = K-1);]
 		for k in 1:K-1
 			if k == 1
 				β[j][k] ~ truncated(Normal(0, 2), -Inf, β[j][k])
 			elseif 1 < k < K-1
-				β[j][k] ~ truncated(Normal(0, 2), β[j][k], β[j][k+1])
+				β[j][k] ~ truncated(Normal(0, 2), β[j][k-1], β[j][k])
 			else # if k == K-1
 				β[j][k] ~ truncated(Normal(0, 2), β[j][k], Inf)
 			end
@@ -64,9 +71,9 @@ end
 end
 
 R"""
-a <- matrix(c(.8,.4,.7, .8, .4, .7, 1, 1, 1, 1))
-d <- matrix(rep(c(2.0,0.0,-1,-1.5),10), ncol=4, byrow=TRUE)
-data <- mirt::simdata(a,d,2000, itemtype = rep('graded', 10)) - 1
+a <- matrix(c(.8,.4,.7, .8, .4))
+d <- matrix(rep(c(2.0,0.0,-1,-1.5),5), ncol=4, byrow=TRUE)
+data <- mirt::simdata(a,d,500, itemtype = rep('graded', 5)) - 1
 """
 @rget data
 
@@ -84,6 +91,11 @@ function convert2graded(data)
 end
 data = convert2graded(data)
 
-chain_NUTS = sample(graded(data), NUTS(0.65), 500);
+# chain_NUTS = sample(graded(data), NUTS(0.65), 500);
 chain_IS = sample(graded(data), IS(), 5000);
-chain_IS
+using Plots, StatsPlots
+plot(chain_IS[:, :β, :])
+
+
+
+chain_IS[:, :θ, :]
