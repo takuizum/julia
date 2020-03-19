@@ -20,55 +20,59 @@ function Distributions.rand(s::GradedLogistic)
     K = length(s.b)+1
 	b = [-Inf; s.b; Inf]
 	p = zeros(K)
-	p[1] = logistic(s.a*(s.θ - b[1])) - logistic(s.a*(s.θ - b[2]))
+	p[1] = cdf(Normal(0,1), s.a*(s.θ - b[1])) - cdf(Normal(0,1), s.a*(s.θ - b[2]))
 	for k in 2:K
-		p[k] = p[k-1] + logistic(s.a*(s.θ - b[k])) - logistic(s.a*(s.θ - b[k+1]))
+		p[k] = p[k-1] + cdf(Normal(0,1), s.a*(s.θ - b[k])) - cdf(Normal(0,1), s.a*(s.θ - b[k+1]))
 	end
 	sum(p .< rand()) + 1
 end
 
 function Distributions.logpdf(d::GradedLogistic, k::Int)
 	b = d.b
-	if k == 1
-		log(1.0 - logistic(d.a*(d.θ - b[k])))
-	elseif k < length(b)-1
-		log(logistic(d.a*(d.θ - b[k])) - logistic(d.a*(d.θ - b[k+1])))
+	if 1 < k < length(d.b)-1
+		log(cdf(Normal(0,1), d.a*(d.θ - b[k])) - cdf(Normal(0,1), d.a*(d.θ - b[k+1])))
+	elseif k == 1
+		log(1 - cdf(Normal(0,1), d.a*(d.θ - b[k])))
 	else
-		log(logistic(d.a*(d.θ - b[k-1])))
+		log(cdf(Normal(0,1), d.a*(d.θ - b[k-1])))
 	end
 end
 
 function Distributions.pdf(d::GradedLogistic, k::Int)
 	b = d.b
-	if k == 1
-		1.0 - logistic(d.a*(d.θ - b[k]))
-	elseif k < length(b)-1
-		logistic(d.a*(d.θ - b[k])) - logistic(d.a*(d.θ - b[k+1]))
+	if 1 < k < length(d.b)-1
+		cdf(Normal(0,1), d.a*(d.θ - b[k])) - cdf(Normal(0,1), d.a*(d.θ - b[k+1]))
+	elseif k == 1
+		1 - cdf(Normal(0,1), d.a*(d.θ - b[k]))
 	else
-		logistic(d.a*(d.θ - b[k-1]))
+		cdf(Normal(0,1), d.a*(d.θ - b[k-1]))
 	end
 end
+
+# test
+par = GradedLogistic(1.0, [-1.0, 0.0, 1.0], 0.0)
+logpdf(par, 4)
 
 @model graded(data) = begin
 	N, J = size(data)
     θ = Vector{Real}(undef, N)
 	α = Vector{Real}(undef, J)
 	β = Vector{Vector}(undef, J)
+	β_diff = Vector{Vector}(undef, J)
 	for j in 1:J
 		cat = sort(unique(skipmissing(data[:,j])))
 		K = length(cat)
 		α[j] ~ LogNormal(0, 2)
 		# Assign normal prior with ordered constraints
 		β[j] = Vector{Real}(undef, K-1)
-		β[j][1:K-1] = [range(-3, stop = 3, length = K-1);]
-		for k in 1:K-1
-			if k == 1
-				β[j][k] ~ truncated(Normal(0, 2), -Inf, β[j][k])
-			elseif 1 < k < K-1
-				β[j][k] ~ truncated(Normal(0, 2), β[j][k-1], β[j][k])
-			else # if k == K-1
-				β[j][k] ~ truncated(Normal(0, 2), β[j][k], Inf)
-			end
+		β_diff[j] = Vector{Real}(undef, length(cat) - 2)
+		for k in 1:length(cat) - 1
+		    if k == 1
+		        β[j][k] ~ Normal(-3, 1)
+		    else
+		        β_diff[j][k-1] ~ Normal(0, 1)
+		        β[j][k] = β[j][k - 1] + exp(β_diff[j][k-1])
+		    end
 		end
 	end
 	# assign distributon to each element
@@ -81,6 +85,8 @@ end
 	    end
     end
 end
+
+
 
 R"""
 a <- matrix(c(.8,.4,.7, .8, .4))
@@ -96,7 +102,7 @@ function convert2graded(data)
 		cat = sort(unique(skipmissing(data[:,j])))
 		for (k, v) in enumerate(cat)
 			println("Item: ", j, " Observed: ", v, " is converted to Category: ", k)
-			data2[data[:,j] .==  v, j] .= k
+			data2[data[:,j] .==  v, j] .= k# Int64(k)
 		end
 	end
 	return data2
