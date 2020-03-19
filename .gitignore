@@ -2,3 +2,5 @@
 tmp/
 figure/
 .vscode/
+pkg/pkg_Turing/Project.toml
+pkg/pkg_Turing/Manifest.toml
