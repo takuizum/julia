@@ -28,24 +28,22 @@ function Distributions.rand(s::GradedLogistic)
 end
 
 function Distributions.logpdf(d::GradedLogistic, k::Int)
-	b = d.b
 	if k == 1
-		log(1.0 - logistic(d.a*(d.θ - b[k])))
-	elseif k < length(b)-1
-		log(logistic(d.a*(d.θ - b[k])) - logistic(d.a*(d.θ - b[k+1])))
+		-softplus(d.a*(d.θ - d.b[k]))
+	elseif k ≤ length(d.b)
+		log(logistic(d.a*(d.θ - d.b[k-1])) - logistic(d.a*(d.θ - d.b[k])))
 	else
-		log(logistic(d.a*(d.θ - b[k-1])))
+		-softplus(-d.a*(d.θ - d.b[k-1]))
 	end
 end
 
 function Distributions.pdf(d::GradedLogistic, k::Int)
-	b = d.b
 	if k == 1
-		1.0 - logistic(d.a*(d.θ - b[k]))
-	elseif k < length(b)-1
-		logistic(d.a*(d.θ - b[k])) - logistic(d.a*(d.θ - b[k+1]))
+		1.0 - logistic(d.a*(d.θ - d.b[k]))
+	elseif k ≤ length(d.b)
+		logistic(d.a*(d.θ - d.b[k-1])) - logistic(d.a*(d.θ - d.b[k]))
 	else
-		logistic(d.a*(d.θ - b[k-1]))
+		logistic(d.a*(d.θ - d.b[k-1]))
 	end
 end
 
@@ -60,15 +58,9 @@ end
 		α[j] ~ LogNormal(0, 2)
 		# Assign normal prior with ordered constraints
 		β[j] = Vector{Real}(undef, K-1)
-		β[j][1:K-1] = [range(-3, stop = 3, length = K-1);]
+		bounds = [-Inf; sort(rand(Normal(0, 2), K-2)); Inf]
 		for k in 1:K-1
-			if k == 1
-				β[j][k] ~ truncated(Normal(0, 2), -Inf, β[j][k])
-			elseif 1 < k < K-1
-				β[j][k] ~ truncated(Normal(0, 2), β[j][k-1], β[j][k])
-			else # if k == K-1
-				β[j][k] ~ truncated(Normal(0, 2), β[j][k], Inf)
-			end
+			β[j][k] ~ truncated(Normal(0, 2), bounds[k], bounds[k+1])
 		end
 	end
 	# assign distributon to each element
@@ -77,7 +69,8 @@ end
 	end
    	for i in 1:N
 		for j in 1:J
-			data[i,j] ~ GradedLogistic(α[j], β[j], θ[i])
+			# data[i,j] ~ GradedLogistic(α[j], β[j], θ[i])
+			data[i,j] ~ OrderedLogistic(α[j]*θ[i], β[j])
 	    end
     end
 end

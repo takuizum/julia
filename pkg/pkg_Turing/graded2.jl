@@ -1,92 +1,6 @@
 using Turing, RCall
 using DataFrames, StatsFuns, Distributions
-
-# Define logistic model under GRM
-
-mutable struct GradedLogistic{T1} <: DiscreteUnivariateDistribution
-   a::T1
-   b::Vector{T1}
-   θ::T1
-   function GradedLogistic(a, b, θ)
-	   d = new{typeof(θ)}()
-	   d.a = a
-	   d.b = b
-	   d.θ = θ
-	   return d
-   end
-end
-
-function Distributions.rand(s::GradedLogistic)
-    K = length(s.b)+1
-	b = [-Inf; s.b; Inf]
-	p = zeros(K)
-	p[1] = cdf(Normal(0,1), s.a*(s.θ - b[1])) - cdf(Normal(0,1), s.a*(s.θ - b[2]))
-	for k in 2:K
-		p[k] = p[k-1] + cdf(Normal(0,1), s.a*(s.θ - b[k])) - cdf(Normal(0,1), s.a*(s.θ - b[k+1]))
-	end
-	sum(p .< rand()) + 1
-end
-
-function Distributions.logpdf(d::GradedLogistic, k::Int)
-	b = d.b
-	if 1 < k < length(d.b)-1
-		log(cdf(Normal(0,1), d.a*(d.θ - b[k])) - cdf(Normal(0,1), d.a*(d.θ - b[k+1])))
-	elseif k == 1
-		log(1 - cdf(Normal(0,1), d.a*(d.θ - b[k])))
-	else
-		log(cdf(Normal(0,1), d.a*(d.θ - b[k-1])))
-	end
-end
-
-function Distributions.pdf(d::GradedLogistic, k::Int)
-	b = d.b
-	if 1 < k < length(d.b)-1
-		cdf(Normal(0,1), d.a*(d.θ - b[k])) - cdf(Normal(0,1), d.a*(d.θ - b[k+1]))
-	elseif k == 1
-		1 - cdf(Normal(0,1), d.a*(d.θ - b[k]))
-	else
-		cdf(Normal(0,1), d.a*(d.θ - b[k-1]))
-	end
-end
-
-# test
-par = GradedLogistic(1.0, [-1.0, 0.0, 1.0], 0.0)
-logpdf(par, 4)
-
-@model graded(data) = begin
-	N, J = size(data)
-    θ = Vector{Real}(undef, N)
-	α = Vector{Real}(undef, J)
-	β = Vector{Vector}(undef, J)
-	β_diff = Vector{Vector}(undef, J)
-	for j in 1:J
-		cat = sort(unique(skipmissing(data[:,j])))
-		K = length(cat)
-		α[j] ~ LogNormal(0, 2)
-		# Assign normal prior with ordered constraints
-		β[j] = Vector{Real}(undef, K-1)
-		β_diff[j] = Vector{Real}(undef, length(cat) - 2)
-		for k in 1:length(cat) - 1
-		    if k == 1
-		        β[j][k] ~ Normal(-3, 1)
-		    else
-		        β_diff[j][k-1] ~ Normal(0, 1)
-		        β[j][k] = β[j][k - 1] + exp(β_diff[j][k-1])
-		    end
-		end
-	end
-	# assign distributon to each element
-	for i in 1:N
-		θ[i] ~ Normal(0, 1)
-	end
-   	for i in 1:N
-		for j in 1:J
-			data[i,j] ~ GradedLogistic(α[j], β[j], θ[i])
-	    end
-    end
-end
-
-
+# using ForwardDiff: ForwardDiff
 
 R"""
 a <- matrix(c(.8,.4,.7, .8, .4))
@@ -94,6 +8,8 @@ d <- matrix(rep(c(2.0,0.0,-1,-1.5),5), ncol=4, byrow=TRUE)
 data <- mirt::simdata(a,d,500, itemtype = rep('graded', 5)) - 1
 """
 @rget data
+
+
 
 function convert2graded(data)
 	N, J = size(data)
@@ -109,11 +25,80 @@ function convert2graded(data)
 end
 data = convert2graded(data)
 
-chain_NUTS = sample(graded(data), NUTS(0.65), 500);
-chain_IS = sample(graded(data), IS(), 5000);
-using Plots, StatsPlots
-plot(chain_IS[:, :β, :])
+@model graded(data) = begin # Well defined model!!
+	N, J = size(data)
+    θ = Vector(undef, N)
+	α = Vector(undef, J)
+	β = Vector{Vector}(undef, J)
+	β_diff = Vector{Vector}(undef, J)
+	for j in 1:J
+		cat = sort(unique(skipmissing(data[:,j])))
+		K = length(cat)
+		α[j] ~ LogNormal(0, 2)
+		# Assign normal prior with ordered constraints
+		β[j] = Vector(undef, K-1)
+		β_diff[j] = Vector(undef, length(cat) - 2)
+		for k in 1:K - 1
+		    if k == 1
+		        β[j][k] ~ Normal(-3, 1)
+		    else
+		        β_diff[j][k-1] ~ Normal(0, 1)
+		        β[j][k] = β[j][k - 1] + exp(β_diff[j][k-1])
+		    end
+		end
+	end
+	# assign distributon to each element
+	for i in 1:N
+		θ[i] ~ Normal(0, 1)
+	end
+	# θ ~ MvNormal(fill(0.0, N), 1.0)
+   	for i in 1:N
+		for j in 1:J
+			η = α[j]*θ[i]
+			data[i,j] ~ OrderedLogistic(η, β[j]) # type unstable
+			# data[i,j] ~ OrderedProbit(η, β[j])
+	    end
+    end
+end
 
 
+# Performance check
+model = graded(data)
+varinfo = Turing.VarInfo(model)
+spl = Turing.SampleFromPrior()
+@code_warntype model.f(varinfo, spl, Turing.DefaultContext(), model)
 
-chain_IS[:, :θ, :]
+# chain_NUTS = sample(graded(data), NUTS(1000, 0.65), 500);
+chain_HMCDA = sample(graded(data), HMCDA(200, 0.65, 0.3), 500);
+chain_NUTS = sample(graded(data), NUTS(100, 0.65), 500);
+chain_Gibbs = sample(graded(data), Gibbs(NUTS(100, 0.65, :α),
+										 NUTS(100, 0.65, :β),
+										 NUTS(100, 0.65, :β_diff),
+										 NUTS(100, 0.65, :θ)
+										 ),
+					500);
+
+
+# multiple chain
+
+chain = mapreduce(
+				c -> sample(graded(data),
+				HMCDA(200, 0.65, 0.3),
+				500),
+		chainscat,
+		1:4);
+
+# check values
+summarystats(chain)
+summarystats(chain_HMC)
+
+# visualize
+using StatsPlots
+# densituy
+plot(chain[:, :α, :], seriestype = :density)
+# chain(trace plot)
+tchain = mapreduce(x -> s)
+
+# ADVI
+q = ADVI()
+chain_vi = vi(graded(data), q)
