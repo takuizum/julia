@@ -52,6 +52,7 @@ data = convert2graded(data)
 		θ[i] ~ Normal(0, 1)
 	end
 	# θ ~ MvNormal(fill(0.0, N), 1.0)
+	η = Real[]
    	for i in 1:N
 		for j in 1:J
 			η = α[j]*θ[i]
@@ -69,7 +70,7 @@ spl = Turing.SampleFromPrior()
 @code_warntype model.f(varinfo, spl, Turing.DefaultContext(), model)
 
 # chain_NUTS = sample(graded(data), NUTS(1000, 0.65), 500);
-chain_HMCDA = sample(graded(data), HMCDA(200, 0.65, 0.3), 500);
+chain_HMCDA = sample(graded(data), HMCDA(200, 0.65, 0.3), 500); # about 9 minutes
 chain_NUTS = sample(graded(data), NUTS(100, 0.65), 500);
 chain_Gibbs = sample(graded(data), Gibbs(NUTS(100, 0.65, :α),
 										 NUTS(100, 0.65, :β),
@@ -90,14 +91,15 @@ chain = mapreduce(
 
 # check values
 summarystats(chain)
-summarystats(chain_HMC)
+summarystats(chain_NUTS)
 
+
+chain = chain_NUTS
 # visualize
 using StatsPlots
-# densituy
+# density
 plot(chain[:, :α, :], seriestype = :density)
 # chain(trace plot)
-tchain = mapreduce(x -> s)
 
 # ADVI
 q = ADVI()

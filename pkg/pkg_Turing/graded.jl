@@ -49,15 +49,15 @@ end
 
 @model graded(data) = begin
 	N, J = size(data)
-    θ = Vector{Real}(undef, N)
-	α = Vector{Real}(undef, J)
+    θ = Vector(undef, N)
+	α = Vector(undef, J)
 	β = Vector{Vector}(undef, J)
 	for j in 1:J
 		cat = sort(unique(skipmissing(data[:,j])))
 		K = length(cat)
 		α[j] ~ LogNormal(0, 2)
 		# Assign normal prior with ordered constraints
-		β[j] = Vector{Real}(undef, K-1)
+		β[j] = Vector(undef, K-1)
 		bounds = [-Inf; sort(rand(Normal(0, 2), K-2)); Inf]
 		for k in 1:K-1
 			β[j][k] ~ truncated(Normal(0, 2), bounds[k], bounds[k+1])
@@ -96,10 +96,12 @@ function convert2graded(data)
 end
 data = convert2graded(data)
 
-chain_NUTS = sample(graded(data), NUTS(0.65), 500);
-chain_IS = sample(graded(data), IS(), 5000);
-using Plots, StatsPlots
-plot(chain_IS[:, :β, :])
+chain_NUTS = sample(graded(data), HMCDA(200, 0.65, 0.3), 2000);
+
+summarystats(chain_NUTS)
+
+using StatsPlots
+plot(chain_NUTS[:, :β, :])
 
 
 

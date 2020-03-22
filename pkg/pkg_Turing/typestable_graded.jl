@@ -1,16 +1,18 @@
-@model graded(data, ::Type{T} <: Vector{Real}) where {T} = begin # Well defined model!!
+@model graded(data, ::Type{T} = Float64) where {T} = begin # Well defined model!!
+	# 500 subjects, 5 items => 05:00
 	N, J = size(data)
-    θ = T(undef, N)
-	α = T(undef, J)
-	β = Vector{T}(undef, J)
-	β_diff = Vector{T}(undef, J)
+    θ = Vector{T}(undef, N)
+	α = Vector{T}(undef, J)
+	β = Vector{Vector{T}}(undef, J)
+	β_diff = Vector{Vector{T}}(undef, J)
+	η = zero(T)
 	for j in 1:J
 		cat = sort(unique(skipmissing(data[:,j])))
 		K = length(cat)
 		α[j] ~ LogNormal(0, 2)
 		# Assign normal prior with ordered constraints
-		β[j] = T(undef, K-1)
-		β_diff[j] = T(undef, length(cat) - 2)
+		β[j] = Vector{T}(undef, K-1)
+		β_diff[j] = Vector{T}(undef, length(cat) - 2)
 		for k in 1:K - 1
 		    if k == 1
 		        β[j][k] ~ Normal(-3, 1)
@@ -37,3 +39,6 @@ model = graded(data)
 varinfo = Turing.VarInfo(model)
 spl = Turing.SampleFromPrior()
 @code_warntype model.f(varinfo, spl, Turing.DefaultContext(), model)
+
+chain_HMCDA = sample(graded(data), HMCDA(200, 0.65, 0.3), 500);
+chain_HMCDA = sample(graded(data), NUTS(100, 0.65), 500);
