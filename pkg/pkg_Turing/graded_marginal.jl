@@ -4,6 +4,7 @@ using Turing
     M = 31 # N of nodes
 	node = Vector{Real}(undef, M)
     node = range(-4, stop = 4; length = M)
+	weight = pdf.(Normal(0, 1), node) ./ sum(pdf.(Normal(0, 1), node))
     θ = Matrix{Real}(undef, N, M)
 	α = Vector(undef, J)
 	β = Vector{Vector}(undef, J)
@@ -29,7 +30,7 @@ using Turing
 		θ[i, m] = 0.0
 	end
     for i in 1:N, m in 1:M, j in 1:J
-        θ[i, m] += logpdf(OrderedLogistic(α[j] * node[m], β[j]), data[i,j]) + logpdf(Normal(0, 1), node[m])
+        θ[i, m] += logpdf(OrderedLogistic(α[j] * node[m], β[j]), data[i,j]) * weight[m]
 	end
    	for i in 1:N
         for j in 1:J
