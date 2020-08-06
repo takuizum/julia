@@ -1,0 +1,60 @@
+---
+title : example1
+author : takuizum
+data : 1th April 2020
+---
+
+# Example1
+
+This is an example of the usage of package `Weave`.
+
+## Basic Oparator
+
+```julia
+1 + 1
+```
+
+
+## Sin plot
+
+```julia
+using Plots
+Plots.plot(sin)
+```
+
+
+# Call R
+
+```julia
+using RCall
+R"""
+1 + 1
+"""
+```
+
+## Independent R chank dosen't work.
+
+For example,
+
+```
+library(tidyverse)
+ggplot(iris, aes(x = Sepal.Length, y = Sepal.Width, shape = Species))
+```
+the chunk above won't work well even if make it `R` chank.
+
+## Tangle `jmd` source to `jl` file
+
+```julia
+using Weave
+tangle("pkg/pkg_Weave/example1.jmd")
+```
+
+## Inline code evaluation
+
+算術平均は，Statisticsパッケージのmean関数を使って計算できる。例えば1，2，3の算術平均は `j using Statistics;mean([1, 2, 3])`である。
+
+ただし，インラインのチャンクの直前には半角スペースが必要である。
+
+プロットも同様にインラインで描画できる。
+
+![A plot](`j plot(1:10)`)
