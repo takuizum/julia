@@ -4,6 +4,9 @@ author: Takumi SHIBUYA
 date: 23th Jan 2020
 ---
 
+# はじめに
+
+Juliaの基本的な操作，特徴的な点をまとめる。
 
 # 演算子(Numerical Operator)
 
@@ -11,15 +14,36 @@ date: 23th Jan 2020
 
 ```julia
 1 + 1
+```
+
+``````julia
 x = 1
 x += 1 # Updating version
-10 / 3 # divide
-10 ÷ 3 # integer divide
-10 % 3 # remainder
-[1 2; 3 4] \ [1; 2] # inverse (matrix) divide
-2 ^ 3 # power
-"abc " ^ 3
+```
 
+```julia
+10 / 3 # divide
+```
+
+```julia
+10 ÷ 3 # integer divide
+```
+
+```julia
+10 % 3 # remainder
+
+```
+
+```julia
+[1 2; 3 4] \ [1; 2] # inverse (matrix) divide
+```
+
+```julia
+2 ^ 3 # power
+```
+
+```julia
+"abc " ^ 3
 ```
 
 掛け算はRとはちょっとちがう。
@@ -42,7 +66,7 @@ x += 1 # Updating version
 
 ```julia
 x = range(1, 10000; step = 2)
-sum(x); # compile
+sum(x); # precompile
 @time sum(x)
 ```
 
@@ -58,7 +82,7 @@ mysum(x)
 @time mysum(x) # ベクトル演算しても，loopで計算してもほぼ実行速度が変わらない！
 ```
 
-ベクトルに対して繰り返し操作する場合はdot syntaxを利用すると効率的。
+ベクトルに対して繰り返し操作する場合は *dot operator(broadcasting)* を利用すると効率的。
 
 ```julia
 x = [1:2:10000;] # Array
@@ -68,6 +92,16 @@ x .+ 2
 ```julia
 2x # times はベクトルに対しても定義されているので，dotなしで使える。
 ```
+
+どんな関数でも，`@.`マクロをつけるだけで，一度に計算できる。
+
+```julia
+x = ("abc", 123, [1 2;3 4])
+
+@. x^2
+```
+
+
 # 型(Types)
 
 - 静的型付け 関数が実行される前に（コンパイル時に），変数の型は宣言されている必要がある
@@ -78,6 +112,16 @@ function foo()
     x::Int64 = 1 # こんな感じで定義する。
     println(x)
 end
+```
+
+関数を定義するときに，あらかじめ型を設定することもできるが，基本的にコード最適化や汎用性の妨げになるので，避けたほうが良い。
+
+```julia
+function foo(x::Int64)
+    println(x)
+end
+
+foo(1)
 ```
 
 ## 抽象型
@@ -152,22 +196,21 @@ hoge1 = hoge(1, [1,2])
 hoge1.huga
 ```
 
-### Parametric Constructor
+<!-- ### Parametric Constructor
 ```julia
 struct phoge{T<:Real}
     piyp::T
     huga::T
+    phoge(x) = phoge(x, x)
 end;
 ```
 ```julia
-phoge1 = phoge(1, 1)
+phoge1 = phoge(1)
 ```
 ```julia
-phoge2 = phoge(1., 1.)
-```
-```julia
-phoge3 = phoge(1, 3.0) # Error (2つの値の型が異なるため。)
-```
+phoge2 = phoge(1.)
+``` -->
+
 ### Mutable Constructor
 ```julia
 mutable struct mhoge
